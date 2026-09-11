@@ -333,6 +333,21 @@ table.edit input[type="checkbox"] { accent-color: var(--brand); width: 16px; hei
   resize: vertical; white-space: pre; overflow-wrap: normal; overflow-x: auto;
 }
 
+#scanBox {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+#scanVideo {
+  width: min(100%, 320px);
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: var(--sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
 .qr {
   background: #fff;
   padding: 10px;
@@ -559,9 +574,15 @@ body.kiosk #kioskExit { display: inline-flex; }
         <button class="btn btn-sm" id="qrBtn" type="button">顯示 QR Code</button>
         <button class="btn btn-sm" id="exportBtn" type="button">匯出全部</button>
         <button class="btn btn-sm" id="exportOne" type="button">只匯出目前課表</button>
+        <button class="btn btn-sm" id="scanBtn" type="button">掃描 QR</button>
         <button class="btn btn-sm" id="pasteBtn" type="button">貼上連結／設定</button>
         <button class="btn btn-sm" id="importBtn" type="button">匯入</button>
         <button class="btn btn-sm" id="downloadBtn" type="button">下載 JSON</button>
+      </div>
+      <div id="scanBox" hidden>
+        <video id="scanVideo" playsinline muted></video>
+        <p class="hint" id="scanHint">正在開啟相機…</p>
+        <button class="btn btn-sm" id="scanStop" type="button">停止掃描</button>
       </div>
       <div id="qrBox" data-shown="0"></div>
       <textarea class="io-out" id="ioBox" spellcheck="false"
@@ -1431,12 +1452,33 @@ async function deflateToB64(str) {
   return bytesToB64(new Uint8Array(await new Response(cs.readable).arrayBuffer()));
 }
 
-async function inflateFromB64(b64) {
+async function inflateFromBytes(bytes) {
   const ds = new DecompressionStream("deflate-raw");
   const w = ds.writable.getWriter();
-  w.write(b64ToBytes(b64));
+  w.write(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes));
   w.close();
   return new TextDecoder().decode(await new Response(ds.readable).arrayBuffer());
+}
+
+async function inflateFromB64(b64) {
+  return inflateFromBytes(b64ToBytes(b64));
+}
+
+/**
+ * 給 QR 用的位元組。
+ *
+ * QR 不放網址，直接放壓縮後的原始位元組，理由是量出來的：
+ * 網址形式是 1012 字元 → 109 模組，而 jsQR 的解碼上限在 105 模組
+ * （版本 22），109 一定失敗，放大畫布也沒用。
+ * 拿掉網址前綴（44 字元）再改用 byte 模式避開 base64 的 33% 膨脹，
+ * 756 bytes → 93 模組，穩穩落在可解範圍內，相機也好對焦。
+ *
+ * 代價：這個 QR 不是網址，用系統相機掃不會開瀏覽器 —— 但那條路本來
+ * 就是斷的（iOS 主畫面 App 和 Safari 的 localStorage 不共用）。
+ * 要傳給別人請用「複製分享連結」，那個仍然是正常網址。
+ */
+async function buildQrBytes() {
+  return b64ToBytes(await deflateToB64(JSON.stringify(cfg)));
 }
 
 /** 產生分享網址；能壓就壓 */
@@ -2184,6 +2226,122 @@ async function applyImport(text, source) {
   }
 }
 
+/* ── 掃描 QR ──────────────────────────────────────────────────
+   iOS 主畫面 web app 的 localStorage 和 Safari 隔離，所以用系統相機掃
+   只會套用到 Safari；要在 App 內部掃才進得了它自己的儲存空間。
+
+   iOS 的 standalone 相機有已知問題：權限不會被記住（每次重問）、某些
+   iOS 版本會整個失效。所以這條路一定要能優雅失敗 —— 失敗就導向
+   「貼上連結」，那條路不靠相機。
+
+   函式庫只在按下按鈕時才載入，平常仍是零相依、離線可用。 */
+/* 用 jsQR：純函式，餵它像素就回傳結果。沒有 worker、沒有引擎初始化，
+   所以不會踩到「函式庫想用相對路徑載自己的 worker」那類 CDN 問題。
+   相機迴圈自己寫，行為完全可控。 */
+const QR_LIB = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";
+
+let scanStream = null, scanRAF = null, scanLibLoading = null;
+
+function loadScanLib() {
+  if (window.jsQR) return Promise.resolve();
+  if (scanLibLoading) return scanLibLoading;
+  scanLibLoading = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = QR_LIB;
+    s.onload = resolve;
+    s.onerror = () => { scanLibLoading = null; reject(new Error("load")); };
+    document.head.appendChild(s);
+  });
+  return scanLibLoading;
+}
+
+function stopScan() {
+  if (scanRAF) { cancelAnimationFrame(scanRAF); scanRAF = null; }
+  if (scanStream) {
+    // 每一條 track 都要 stop，否則相機指示燈會一直亮著
+    for (const t of scanStream.getTracks()) { try { t.stop(); } catch (e) {} }
+    scanStream = null;
+  }
+  const v = $("scanVideo");
+  try { v.pause(); v.srcObject = null; } catch (e) {}
+  $("scanBox").hidden = true;
+  $("scanBtn").textContent = "掃描 QR";
+}
+
+$("scanStop").addEventListener("click", stopScan);
+
+$("scanBtn").addEventListener("click", async () => {
+  if (scanStream) { stopScan(); return; }
+
+  const hint = $("scanHint"), video = $("scanVideo");
+  $("scanBox").hidden = false;
+  $("scanBtn").textContent = "關閉掃描";
+  hint.textContent = "正在載入掃描器…";
+
+  try { await loadScanLib(); }
+  catch (e) {
+    hint.textContent = "掃描器載不下來（需要連網）。改用「貼上連結／設定」—— 那個不需要相機。";
+    return;
+  }
+
+  hint.textContent = "正在開啟相機…";
+  try {
+    scanStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" }, audio: false
+    });
+    video.srcObject = scanStream;
+    await video.play();
+  } catch (e) {
+    const m = String((e && e.name) || (e && e.message) || e);
+    stopScan();
+    $("scanBox").hidden = false;
+    $("scanBtn").textContent = "關閉掃描";
+    hint.textContent = /NotAllowed|Denied|Permission/i.test(m)
+      ? "相機權限被拒絕。iOS 的主畫面 App 不會記住這個權限，再按一次可以重試；或改用「貼上連結／設定」。"
+      : "打不開相機（" + m + "）。改用「貼上連結／設定」—— 那個不需要相機。";
+    return;
+  }
+
+  hint.textContent = "把相機對準電腦螢幕上的 QR。";
+  const cv = document.createElement("canvas");
+  const g = cv.getContext("2d", { willReadFrequently: true });
+
+  const tick = () => {
+    if (!scanStream) return;
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      // 縮到最長邊 640，夠解又不會每格都吃掉整個 CPU
+      const scale = Math.min(1, 640 / Math.max(video.videoWidth, video.videoHeight));
+      cv.width = Math.round(video.videoWidth * scale);
+      cv.height = Math.round(video.videoHeight * scale);
+      if (cv.width && cv.height) {
+        g.drawImage(video, 0, 0, cv.width, cv.height);
+        const img = g.getImageData(0, 0, cv.width, cv.height);
+        const hit = window.jsQR(img.data, img.width, img.height, { inversionAttempts: "dontInvert" });
+        if (hit) {
+          stopScan();
+          // 本 App 產生的 QR 裝的是壓縮後的原始位元組（見 buildQrBytes）；
+          // 別處來的 QR 可能是網址或文字，兩種都接。
+          if (hit.binaryData && hit.binaryData.length) {
+            inflateFromBytes(new Uint8Array(hit.binaryData))
+              .then(json => applyImport(json, "來自 QR"))
+              .catch(() => applyImport(hit.data || "", "來自 QR"));
+          } else {
+            applyImport(hit.data || "", "來自 QR");
+          }
+          return;
+        }
+      }
+    }
+    scanRAF = requestAnimationFrame(tick);
+  };
+  scanRAF = requestAnimationFrame(tick);
+});
+
+// 切到背景就關相機，不然指示燈會一直亮著
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible" && scanStream) stopScan();
+});
+
 $("pasteBtn").addEventListener("click", async () => {
   if (!navigator.clipboard || !navigator.clipboard.readText) {
     toast("這個瀏覽器不給直接讀剪貼簿，請貼到下面的框裡再按「匯入」。");
@@ -2267,9 +2425,11 @@ $("qrBtn").addEventListener("click", async () => {
     { className: "hint", textContent: "產生中…" }));
   try {
     await loadQrLib();
-    const url = await buildShareUrl();
+    const bytes = await buildQrBytes();
+    let bin = "";
+    for (const b of bytes) bin += String.fromCharCode(b);
     const qr = window.qrcode(0, "L");          // 0 = 自動選容量，L = 最低容錯換最大容量
-    qr.addData(url);
+    qr.addData(bin, "Byte");                   // 原始位元組，不是網址 —— 見 buildQrBytes 的說明
     qr.make();
     box.replaceChildren();
     const wrap = document.createElement("div");
@@ -2277,8 +2437,9 @@ $("qrBtn").addEventListener("click", async () => {
     wrap.innerHTML = qr.createSvgTag({ cellSize: 3, margin: 2, scalable: true });
     const cap = document.createElement("p");
     cap.className = "hint";
-    cap.textContent = "用 iPad 或手機的相機對著它，點開通知就會套用這一整套設定（"
-                    + url.length + " 字元）。";
+    cap.textContent = "在另一台裝置上打開作息鐘，按「掃描 QR」對著這個圖（"
+                    + bytes.length + " bytes・" + qr.getModuleCount() + " 模組）。"
+                    + "系統相機掃它沒有用 —— 它不是網址，要傳給別人請用「複製分享連結」。";
     box.append(wrap, cap);
     box.dataset.shown = "1";
     $("qrBtn").textContent = "收起 QR Code";
