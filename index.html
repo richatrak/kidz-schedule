@@ -559,13 +559,14 @@ body.kiosk #kioskExit { display: inline-flex; }
         <button class="btn btn-sm" id="qrBtn" type="button">顯示 QR Code</button>
         <button class="btn btn-sm" id="exportBtn" type="button">匯出全部</button>
         <button class="btn btn-sm" id="exportOne" type="button">只匯出目前課表</button>
+        <button class="btn btn-sm" id="pasteBtn" type="button">貼上連結／設定</button>
         <button class="btn btn-sm" id="importBtn" type="button">匯入</button>
         <button class="btn btn-sm" id="downloadBtn" type="button">下載 JSON</button>
       </div>
       <div id="qrBox" data-shown="0"></div>
       <textarea class="io-out" id="ioBox" spellcheck="false"
         aria-label="設定內容（JSON）"
-        placeholder="按「匯出」會把設定貼到這裡；要匯入就把 JSON 貼進來再按「匯入」。"></textarea>
+        placeholder="按「匯出」會把設定貼到這裡。要匯入的話，把分享連結或整段 JSON 貼進來，再按「匯入」。"></textarea>
       <p class="hint">
         匯入時會自動判斷：整包設定就全部取代，單一課表就加進現有清單。
         這裡的 JSON 和 Windows 版共用同一個格式。
@@ -2137,12 +2138,76 @@ $("exportOne").addEventListener("click", () => {
   toast("已匯出「" + prof().name + "」");
 });
 
+/**
+ * 把一段文字變成設定。接受三種東西，因為使用者手上可能是其中任何一種：
+ *   1. 完整的分享網址（…/#z=… 或 …/#s=…）
+ *   2. 只有 hash 那一段
+ *   3. 原始 JSON
+ *
+ * 為什麼要吃網址：iOS 主畫面的 web app 有自己獨立的 localStorage，
+ * 和 Safari 不共用。用相機掃 QR 只會把設定套用到 Safari，主畫面那個
+ * App 讀不到。所以必須有辦法在 App 內部貼上連結，才走得通。
+ */
+async function parseImportText(text) {
+  const t = String(text || "").trim();
+  if (!t) throw new Error("empty");
+
+  const m = t.match(/#(z|s)=([A-Za-z0-9_\-+/=]+)/);
+  if (m) {
+    const payload = m[2];
+    return JSON.parse(m[1] === "z" ? await inflateFromB64(payload) : b64ToStr(payload));
+  }
+  return JSON.parse(t);
+}
+
+async function applyImport(text, source) {
+  let parsed;
+  try { parsed = await parseImportText(text); }
+  catch (e) {
+    toast(String(text || "").trim()
+      ? "認不出這段內容 —— 可以貼分享連結，或整段 JSON。"
+      : "沒有東西可以匯入。");
+    return;
+  }
+  const err = versionError(parsed);
+  if (err) { toast(err); return; }
+
+  if (parsed && Array.isArray(parsed.profiles)) {
+    cfg = cleanConfig(parsed);
+    editDayKey = "mon";
+    saveConfig(); refreshAll();
+    toast("已取代全部設定（" + cfg.profiles.length + " 個課表）" + (source ? "・" + source : ""));
+  } else if (parsed && parsed.days) {
+    addProfile(cleanProfile(parsed, "tmp", "匯入的課表"));
+  } else {
+    toast("認不出這份設定 —— 它需要有 profiles（整包）或 days（單一課表）。");
+  }
+}
+
+$("pasteBtn").addEventListener("click", async () => {
+  if (!navigator.clipboard || !navigator.clipboard.readText) {
+    toast("這個瀏覽器不給直接讀剪貼簿，請貼到下面的框裡再按「匯入」。");
+    $("io").open = true;
+    $("ioBox").focus();
+    return;
+  }
+  let text;
+  try { text = await navigator.clipboard.readText(); }
+  catch (e) {
+    toast("讀不到剪貼簿（可能被拒絕了），請貼到下面的框裡再按「匯入」。");
+    $("io").open = true;
+    $("ioBox").focus();
+    return;
+  }
+  await applyImport(text, "來自剪貼簿");
+});
+
 $("importBtn").addEventListener("click", () => {
   const txt = $("ioBox").value.trim();
-  if (!txt) { toast("先把 JSON 貼到框裡"); return; }
+  if (!txt) { toast("先把連結或 JSON 貼到框裡"); return; }
   let parsed;
   try { parsed = JSON.parse(txt); }
-  catch (e) { toast("這段不是合法的 JSON，檢查一下有沒有少逗號或引號"); return; }
+  catch (e) { applyImport(txt); return; }
 
   const err = versionError(parsed);
   if (err) { toast(err); return; }
