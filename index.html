@@ -330,6 +330,16 @@ table.edit input[type="checkbox"] { accent-color: var(--brand); width: 16px; hei
   resize: vertical; white-space: pre; overflow-wrap: normal; overflow-x: auto;
 }
 
+.qr {
+  background: #fff;
+  padding: 10px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  width: max-content;
+  max-width: 100%;
+}
+.qr svg { display: block; width: 260px; max-width: 100%; height: auto; }
+
 .toast {
   position: fixed; left: 50%; bottom: 22px; translate: -50% 0;
   background: var(--ink); color: var(--bg); padding: 9px 18px; border-radius: 999px;
@@ -543,11 +553,13 @@ body.kiosk #kioskExit { display: inline-flex; }
     <div class="details-body">
       <div class="btn-row">
         <button class="btn btn-sm" id="shareBtn" type="button">複製分享連結</button>
+        <button class="btn btn-sm" id="qrBtn" type="button">顯示 QR Code</button>
         <button class="btn btn-sm" id="exportBtn" type="button">匯出全部</button>
         <button class="btn btn-sm" id="exportOne" type="button">只匯出目前課表</button>
         <button class="btn btn-sm" id="importBtn" type="button">匯入</button>
         <button class="btn btn-sm" id="downloadBtn" type="button">下載 JSON</button>
       </div>
+      <div id="qrBox" data-shown="0"></div>
       <textarea class="io-out" id="ioBox" spellcheck="false"
         aria-label="設定內容（JSON）"
         placeholder="按「匯出」會把設定貼到這裡；要匯入就把 JSON 貼進來再按「匯入」。"></textarea>
@@ -1346,8 +1358,16 @@ function cleanConfig(raw) {
   return out;
 }
 
+/* 壓縮的連結要非同步解開，而 loadConfig 必須同步回傳（cfg 在它之後才建立）。
+   所以先記下來，等頁面起來之後再套用。 */
+let pendingShare = null;
+
 function loadConfig() {
   const h = location.hash.replace(/^#/, "");
+  if (h.startsWith("z=")) {
+    pendingShare = h.slice(2);
+    history.replaceState(null, "", location.pathname + location.search);
+  }
   if (h.startsWith("s=")) {
     try {
       const raw = JSON.parse(b64ToStr(h.slice(2)));
@@ -1376,6 +1396,53 @@ function loadConfig() {
 
 function saveConfig(c) {
   try { localStorage.setItem(LS_KEY, JSON.stringify(c || cfg)); } catch (e) {}
+}
+
+/* ── 分享連結的壓縮 ──────────────────────────────────────────
+   未壓縮的整包設定約 6500 字元，聊天軟體會截斷，也塞不進 QR Code。
+   JSON 的重複性很高（每個時段都有同樣八個 key），deflate 後約 1000 字元，
+   兩個問題一次解決。
+   連結前綴：#z= 壓縮過、#s= 未壓縮（舊連結仍可用）。 */
+const CAN_ZIP = typeof CompressionStream === "function" && typeof DecompressionStream === "function";
+
+function bytesToB64(bytes) {
+  let bin = "";
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function b64ToBytes(b64) {
+  const norm = b64.replace(/-/g, "+").replace(/_/g, "/");
+  const bin = atob(norm + "=".repeat((4 - norm.length % 4) % 4));
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+async function deflateToB64(str) {
+  const cs = new CompressionStream("deflate-raw");
+  const w = cs.writable.getWriter();
+  w.write(new TextEncoder().encode(str));
+  w.close();
+  return bytesToB64(new Uint8Array(await new Response(cs.readable).arrayBuffer()));
+}
+
+async function inflateFromB64(b64) {
+  const ds = new DecompressionStream("deflate-raw");
+  const w = ds.writable.getWriter();
+  w.write(b64ToBytes(b64));
+  w.close();
+  return new TextDecoder().decode(await new Response(ds.readable).arrayBuffer());
+}
+
+/** 產生分享網址；能壓就壓 */
+async function buildShareUrl() {
+  const base = location.origin + location.pathname + location.search;
+  const json = JSON.stringify(cfg);
+  if (CAN_ZIP) {
+    try { return base + "#z=" + await deflateToB64(json); } catch (e) {}
+  }
+  return base + "#s=" + strToB64(json);
 }
 
 function strToB64(str) {
@@ -2090,14 +2157,66 @@ $("importBtn").addEventListener("click", () => {
 });
 
 $("shareBtn").addEventListener("click", async () => {
-  const url = location.origin + location.pathname + location.search + "#s=" + strToB64(JSON.stringify(cfg));
+  const url = await buildShareUrl();
   try {
     await navigator.clipboard.writeText(url);
-    toast(url.length > 3000 ? "連結很長，某些聊天軟體可能會截斷" : "連結已複製，對方點開就是同一套設定");
+    toast(url.length > 3000
+      ? "連結已複製，但很長（" + url.length + " 字元），聊天軟體可能會截斷"
+      : "連結已複製（" + url.length + " 字元），對方點開就是同一套設定");
   } catch (e) {
     $("ioBox").value = url;
     $("io").open = true;
     toast("沒辦法自動複製，連結放在下面的框裡了");
+  }
+});
+
+/* QR：給「電腦上設定好、手機／平板要拿到」的情境。
+   相機掃一下就開，不用傳檔也不用複製貼上。
+   產生器只在按下按鈕時才載入，所以平常仍是零相依、離線可用。 */
+let qrLibLoading = null;
+function loadQrLib() {
+  if (window.qrcode) return Promise.resolve();
+  if (qrLibLoading) return qrLibLoading;
+  qrLibLoading = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js";
+    s.onload = resolve;
+    s.onerror = () => reject(new Error("load failed"));
+    document.head.appendChild(s);
+  });
+  return qrLibLoading;
+}
+
+$("qrBtn").addEventListener("click", async () => {
+  const box = $("qrBox");
+  if (box.dataset.shown === "1") {
+    box.replaceChildren();
+    box.dataset.shown = "0";
+    $("qrBtn").textContent = "顯示 QR Code";
+    return;
+  }
+  box.replaceChildren(Object.assign(document.createElement("p"),
+    { className: "hint", textContent: "產生中…" }));
+  try {
+    await loadQrLib();
+    const url = await buildShareUrl();
+    const qr = window.qrcode(0, "L");          // 0 = 自動選容量，L = 最低容錯換最大容量
+    qr.addData(url);
+    qr.make();
+    box.replaceChildren();
+    const wrap = document.createElement("div");
+    wrap.className = "qr";
+    wrap.innerHTML = qr.createSvgTag({ cellSize: 3, margin: 2, scalable: true });
+    const cap = document.createElement("p");
+    cap.className = "hint";
+    cap.textContent = "用 iPad 或手機的相機對著它，點開通知就會套用這一整套設定（"
+                    + url.length + " 字元）。";
+    box.append(wrap, cap);
+    box.dataset.shown = "1";
+    $("qrBtn").textContent = "收起 QR Code";
+  } catch (e) {
+    box.replaceChildren(Object.assign(document.createElement("p"),
+      { className: "hint", textContent: "QR 產生器載不下來（需要連網）。改用「複製分享連結」把網址傳過去。" }));
   }
 });
 
@@ -2134,6 +2253,21 @@ if (["auto", "paper", "chalk"].includes(qs.get("skin"))) cfg.appearance.theme = 
 if (qs.get("bpmf") === "1") cfg.appearance.bopomofo = true;
 
 refreshAll();
+
+// 壓縮的分享連結在這裡才套用（解壓是非同步的）
+if (pendingShare) {
+  (async () => {
+    try {
+      const raw = JSON.parse(await inflateFromB64(pendingShare));
+      const err = versionError(raw);
+      if (err) { toast(err); return; }
+      cfg = cleanConfig(raw);
+      editDayKey = "mon";
+      saveConfig(); refreshAll();
+      toast("已套用連結裡的設定");
+    } catch (e) { toast("這個分享連結壞了，沒有套用"); }
+  })();
+}
 updateWakeLock();
 setInterval(tick, 500);
 
