@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>上下課鐘聲</title>
-<meta name="description" content="照學校作息打鐘的教室時鐘，可切換不同孩子的課表">
+<title>作息鐘</title>
+<meta name="description" content="把一天切成看得見的段落，時間到了自己打鐘。在家維持上學作息用。">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="上下課鐘聲">
+<meta name="apple-mobile-web-app-title" content="作息鐘">
 <meta name="theme-color" content="#13201a">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%94%94%3C/text%3E%3C/svg%3E">
 
@@ -122,7 +122,23 @@ rt {
   font-family: var(--sans);
   user-select: none;
 }
-.bpmf-on :is(.now-period, .tl-name, .tl-sub) { line-height: 2.15; }
+
+/* 注音的寬度差很多（ㄧ 一個符號 vs ㄙㄨㄛˇ 四個），照自然寬度排會參差不齊。
+   所以開注音時把每個漢字放進同寬的格子裡 —— 像注音課本的方格。
+
+   2.6em 是量出來的，不是估的：把字典裡 154 種讀音全部量過，最寬的
+   （ㄒㄩㄥˊ 這類四符號）在未加格線時佔 2.55em。注音符號會落到後備字型，
+   實際比看起來寬，而且把注音字級從 .46em 縮到 .30em 也只降到 2.01em ——
+   縮小換不到緊湊，只會犧牲可讀性，所以字級不動、格線放寬。
+
+   沒有注音的字也一起進格子，否則查不到讀音的字會比旁邊窄一截。 */
+.bpmf-on ruby,
+.bpmf-on .bpmf-pad {
+  display: inline-block;
+  min-width: 2.6em;
+  text-align: center;
+}
+.bpmf-on :is(.now-period, .tl-name, .tl-sub) { line-height: 2.3; }
 
 /* ═══════════════════ 頁首 ═══════════════════ */
 header { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
@@ -371,7 +387,7 @@ body.kiosk #kioskExit { display: inline-flex; }
 
   <header>
     <div class="brand">
-      <h1>上下課鐘聲</h1>
+      <h1>作息鐘</h1>
       <span class="today num" id="today">—</span>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
@@ -457,55 +473,32 @@ body.kiosk #kioskExit { display: inline-flex; }
     </div>
   </section>
 
-  <!-- ── 時段時間（時間骨架） ── -->
-  <details class="hide-kiosk" id="edTime">
-    <summary>時段時間</summary>
+  <!-- ── 編輯課表：一天一張表，時間和科目在同一列 ── -->
+  <details class="hide-kiosk" id="edDay">
+    <summary>編輯課表</summary>
     <div class="details-body">
-      <p class="hint">
-        幾點到幾點、哪些時段要響鈴。同一套時間給好幾天共用 ——
-        改一次，用到它的每一天都會跟著改。
-      </p>
 
-      <div class="tabs" id="timeTabs" role="tablist" aria-label="時段表"></div>
+      <div class="tabs" id="dayTabs" role="tablist" aria-label="星期"></div>
 
       <div class="tbl-scroll">
-        <table class="edit" id="timeTable">
+        <table class="edit" id="dayTable">
           <thead><tr>
-            <th>時段名稱</th><th>開始</th><th>結束</th>
-            <th style="text-align:center">開始<br>響鈴</th>
-            <th style="text-align:center">結束<br>響鈴</th><th></th>
+            <th>時段</th><th>開始</th><th>結束</th>
+            <th id="thPrimary">科目</th><th id="thSecondary">老師</th>
+            <th style="text-align:center">上課<br>響鈴</th>
+            <th style="text-align:center">下課<br>響鈴</th><th></th>
           </tr></thead>
-          <tbody id="timeBody"></tbody>
+          <tbody id="dayBody"></tbody>
         </table>
       </div>
 
       <div class="btn-row">
         <button class="btn btn-sm" id="addSlot" type="button">＋ 加一個時段</button>
-        <button class="btn btn-sm" id="addTable" type="button">＋ 新增時段表</button>
-        <button class="btn btn-sm" id="renTable" type="button">改名</button>
-        <button class="btn btn-sm btn-danger" id="delTable" type="button">刪除這張時段表</button>
+        <button class="btn btn-sm" id="copyDayAll" type="button">複製整天到…</button>
+        <button class="btn btn-sm" id="copyDayTimes" type="button">只複製時間到…</button>
+        <button class="btn btn-sm btn-danger" id="clearDay" type="button">這天不上課</button>
       </div>
 
-      <hr class="rule">
-      <p class="sub-head">每天用哪一張時段表</p>
-      <div class="wk-grid" id="wkGrid"></div>
-    </div>
-  </details>
-
-  <!-- ── 每天上什麼（科目與老師） ── -->
-  <details class="hide-kiosk" id="edDay">
-    <summary>每天上什麼</summary>
-    <div class="details-body">
-      <div class="tabs" id="dayTabs" role="tablist" aria-label="星期"></div>
-      <div class="tbl-scroll">
-        <table class="edit" id="dayTable">
-          <thead><tr>
-            <th>時段</th><th>時間</th>
-            <th id="thMain">科目</th><th id="thSecond">老師</th>
-          </tr></thead>
-          <tbody id="dayBody"></tbody>
-        </table>
-      </div>
       <p class="hint" id="dayHint"></p>
     </div>
   </details>
@@ -536,6 +529,8 @@ body.kiosk #kioskExit { display: inline-flex; }
       <div class="btn-row">
         <button class="btn btn-sm" id="profAdd" type="button">＋ 新增空白課表</button>
         <button class="btn btn-sm" id="profDup" type="button">複製目前這個</button>
+        <button class="btn btn-sm" id="profUp" type="button">↑ 上移</button>
+        <button class="btn btn-sm" id="profDown" type="button">↓ 下移</button>
         <button class="btn btn-sm" id="profWork" type="button">＋ 上班族範例</button>
         <button class="btn btn-sm btn-danger" id="profDel" type="button">刪除目前這個</button>
       </div>
@@ -579,9 +574,9 @@ body.kiosk #kioskExit { display: inline-flex; }
 /* ═══════════════════════════════════════════════════════════════
    1. 資料模型
    ───────────────────────────────────────────────────────────────
-   設定 = { 外觀, profiles{} }
-   profile = 一個人的一整套：時段表（時間骨架）＋ 每週（哪天用哪張、當天各時段的科目）＋ 鈴聲
-   時間和科目刻意分兩層：時間五天共用，科目每天不同。
+   設定 = { version, appearance, current, profiles[] }
+   profile = 一個人的一整套：days（七天，每天一個時段陣列）＋ labels ＋ bells
+   時間和科目放在同一筆，每天各自獨立 —— 要讓幾天一樣用「複製」，不用共用骨架。
    ═══════════════════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════════════════
@@ -597,126 +592,126 @@ const DONATE = {
   文字: "這個小工具有幫到你嗎？請我喝杯咖啡"
 };
 
-const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
-const WEEK_ORDER = ["一", "二", "三", "四", "五", "六", "日"];
+/* 星期用英文短碼。dict 而非 array，因為這是固定已知的七個 key，
+   而且要能用 Date.getDay() 直接查。 */
+const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+const DAY_BY_INDEX = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];   // Date.getDay()
+const DAY_LABEL = { mon: "一", tue: "二", wed: "三", thu: "四", fri: "五", sat: "六", sun: "日" };
 
-const slot = (名稱, 開始, 結束, 開始響鈴, 結束響鈴) =>
-  ({ 名稱, 開始, 結束, 開始響鈴, 結束響鈴 });
+/* 一個時段就是一筆完整資料 —— 時間和科目放在一起，不跨表對應。
+   每一天各自擁有自己的時段清單；要讓幾天一樣，用「複製到其他天」。 */
+const period = (name, start, end, ringStart, ringEnd, subject, teacher) =>
+  ({ name, start, end, ringStart, ringEnd, subject: subject || "", teacher: teacher || "" });
 
-/** 國小一年級：上午四節（無科目、無老師 —— 真實課表請自己填或匯入） */
-function 國小時段() {
-  return {
-    平日半天: [
-      slot("導師時間", "07:50", "08:30", true,  false),
-      slot("第一節",   "08:40", "09:20", true,  true),
-      slot("第二節",   "09:30", "10:10", true,  true),
-      slot("第三節",   "10:30", "11:10", true,  true),
-      slot("第四節",   "11:20", "12:00", true,  true),
-      slot("午餐",     "12:00", "12:40", false, false),
-      slot("放學",     "12:40", "12:40", true,  false)
-    ],
-    整天: [
-      slot("導師時間", "07:50", "08:30", true,  false),
-      slot("第一節",   "08:40", "09:20", true,  true),
-      slot("第二節",   "09:30", "10:10", true,  true),
-      slot("第三節",   "10:30", "11:10", true,  true),
-      slot("第四節",   "11:20", "12:00", true,  true),
-      slot("午休",     "12:00", "13:10", false, true),
-      slot("第五節",   "13:20", "14:00", true,  true),
-      slot("第六節",   "14:10", "14:50", true,  true),
-      slot("第七節",   "15:00", "15:40", true,  true),
-      slot("放學",     "15:40", "15:40", false, false)
-    ]
-  };
+/* 兩種常見的一天，只是「建立預設值」用的模板，存進去之後就各自獨立了。 */
+const HALF_DAY = [
+  ["導師時間", "07:50", "08:30", true,  false],
+  ["第一節",   "08:40", "09:20", true,  true],
+  ["第二節",   "09:30", "10:10", true,  true],
+  ["第三節",   "10:30", "11:10", true,  true],
+  ["第四節",   "11:20", "12:00", true,  true],
+  ["午餐",     "12:00", "12:40", false, false],
+  ["放學",     "12:40", "12:40", true,  false]
+];
+
+const FULL_DAY = [
+  ["導師時間", "07:50", "08:30", true,  false],
+  ["第一節",   "08:40", "09:20", true,  true],
+  ["第二節",   "09:30", "10:10", true,  true],
+  ["第三節",   "10:30", "11:10", true,  true],
+  ["第四節",   "11:20", "12:00", true,  true],
+  ["午休",     "12:00", "13:10", false, true],
+  ["第五節",   "13:20", "14:00", true,  true],
+  ["第六節",   "14:10", "14:50", true,  true],
+  ["第七節",   "15:00", "15:40", true,  true],
+  ["放學",     "15:40", "15:40", false, false]
+];
+
+/** 用模板 + 可選的科目內容組出一天 */
+function buildDay(shape, content) {
+  return shape.map(([name, start, end, rs, re]) => {
+    const c = (content && content[name]) || {};
+    return period(name, start, end, rs, re, c[0], c[1]);
+  });
 }
 
-/** 範例課表的內容 —— 動物老師，一看就知道是假資料，換成真的之前先讓畫面是活的。
- *  科目的排列是隨意編的，不對應任何一個真實班級。 */
-function 範例內容() {
-  const k = (科目, 老師) => ({ 科目, 老師 });
-  const 早安 = k("早安時間", "貓頭鷹老師");
-  const 午餐 = k("午餐", "值日生");
-  return {
-    一: { 導師時間: 早安, 第一節: k("國語", "貓頭鷹老師"), 第二節: k("生活", "小熊老師"),
-          第三節: k("音樂", "黃鸝老師"), 第四節: k("數學", "小松鼠老師"), 午餐 },
-    二: { 導師時間: 早安, 第一節: k("數學", "小松鼠老師"), 第二節: k("體育", "獵豹老師"),
-          第三節: k("國語", "貓頭鷹老師"), 第四節: k("美勞", "蜘蛛老師"),
-          午休: k("午休", "全班一起睡"),
-          第五節: k("自然", "烏龜老師"), 第六節: k("探索課", "狐狸老師"), 第七節: k("手語", "猩猩老師") },
-    三: { 導師時間: 早安, 第一節: k("英語", "鸚鵡老師"), 第二節: k("國語", "貓頭鷹老師"),
-          第三節: k("數學", "小松鼠老師"), 第四節: k("體育", "獵豹老師"), 午餐 },
-    四: { 導師時間: 早安, 第一節: k("生活", "小熊老師"), 第二節: k("數學", "小松鼠老師"),
-          第三節: k("國語", "貓頭鷹老師"), 第四節: k("健康", "長頸鹿老師"), 午餐 },
-    五: { 導師時間: 早安, 第一節: k("數學", "小松鼠老師"), 第二節: k("音樂", "黃鸝老師"),
-          第三節: k("英語", "鸚鵡老師"), 第四節: k("生活", "小熊老師"), 午餐 }
-  };
-}
+/* 範例內容 —— 動物老師，一看就知道是假資料。
+   科目的排列是隨意編的，不對應任何一個真實班級。 */
+const DEMO = {
+  mon: { 導師時間: ["早安時間","貓頭鷹老師"], 第一節: ["國語","貓頭鷹老師"], 第二節: ["生活","小熊老師"],
+         第三節: ["音樂","黃鸝老師"], 第四節: ["數學","小松鼠老師"], 午餐: ["午餐","值日生"] },
+  tue: { 導師時間: ["早安時間","貓頭鷹老師"], 第一節: ["數學","小松鼠老師"], 第二節: ["體育","獵豹老師"],
+         第三節: ["國語","貓頭鷹老師"], 第四節: ["美勞","蜘蛛老師"], 午休: ["午休","全班一起睡"],
+         第五節: ["自然","烏龜老師"], 第六節: ["探索課","狐狸老師"], 第七節: ["手語","猩猩老師"] },
+  wed: { 導師時間: ["早安時間","貓頭鷹老師"], 第一節: ["英語","鸚鵡老師"], 第二節: ["國語","貓頭鷹老師"],
+         第三節: ["數學","小松鼠老師"], 第四節: ["體育","獵豹老師"], 午餐: ["午餐","值日生"] },
+  thu: { 導師時間: ["早安時間","貓頭鷹老師"], 第一節: ["生活","小熊老師"], 第二節: ["數學","小松鼠老師"],
+         第三節: ["國語","貓頭鷹老師"], 第四節: ["健康","長頸鹿老師"], 午餐: ["午餐","值日生"] },
+  fri: { 導師時間: ["早安時間","貓頭鷹老師"], 第一節: ["數學","小松鼠老師"], 第二節: ["音樂","黃鸝老師"],
+         第三節: ["英語","鸚鵡老師"], 第四節: ["生活","小熊老師"], 午餐: ["午餐","值日生"] }
+};
 
-function 國小課表(名稱, 附範例) {
-  const demo = 附範例 ? 範例內容() : null;
-  const day = (表, d) => ({ 時段表: 表, 內容: demo ? demo[d] : {} });
+function schoolProfile(id, name, withDemo) {
+  const D = withDemo ? DEMO : {};
   return {
-    名稱: 名稱 || "國小一年級",
-    欄位: { 主: "科目", 次: "老師" },
-    鈴聲: { 上課: "campus", 下課: "campus", 音量: 0.7 },
-    時段表: 國小時段(),
-    每週: {
-      一: day("平日半天", "一"),
-      二: day("整天",     "二"),
-      三: day("平日半天", "三"),
-      四: day("平日半天", "四"),
-      五: day("平日半天", "五"),
-      六: null,
-      日: null
+    id: id,
+    name: name || "新課表",
+    labels: { primary: "科目", secondary: "老師" },
+    bells: { start: "campus", end: "campus", volume: 0.7 },
+    days: {
+      mon: buildDay(HALF_DAY, D.mon),
+      tue: buildDay(FULL_DAY, D.tue),
+      wed: buildDay(HALF_DAY, D.wed),
+      thu: buildDay(HALF_DAY, D.thu),
+      fri: buildDay(HALF_DAY, D.fri),
+      sat: null,
+      sun: null
     },
-    停課日: []
+    holidays: []
   };
 }
 
-/** 上班族範例：時段的「目標」與「地點」 */
-function 上班族課表() {
-  const 表 = {
-    工作日: [
-      slot("開工",       "09:00", "09:15", true,  false),
-      slot("專注時段一", "09:15", "10:45", true,  true),
-      slot("休息",       "10:45", "11:00", false, true),
-      slot("專注時段二", "11:00", "12:00", true,  true),
-      slot("午休",       "12:00", "13:00", false, true),
-      slot("專注時段三", "13:00", "14:30", true,  true),
-      slot("休息",       "14:30", "14:45", false, true),
-      slot("會議／協作", "14:45", "16:30", true,  true),
-      slot("收尾與明日計畫", "16:30", "17:30", true, true),
-      slot("下班",       "17:30", "17:30", true,  false)
-    ]
+/** 上班族範例：同一個結構，只是把欄位標籤換成「目標／地點」 */
+function workProfile(id) {
+  const shape = [
+    ["開工",           "09:00", "09:15", true,  false],
+    ["專注時段一",     "09:15", "10:45", true,  true],
+    ["休息",           "10:45", "11:00", false, true],
+    ["專注時段二",     "11:00", "12:00", true,  true],
+    ["午休",           "12:00", "13:00", false, true],
+    ["專注時段三",     "13:00", "14:30", true,  true],
+    ["喘口氣",         "14:30", "14:45", false, true],
+    ["會議／協作",     "14:45", "16:30", true,  true],
+    ["收尾與明日計畫", "16:30", "17:30", true,  true],
+    ["下班",           "17:30", "17:30", true,  false]
+  ];
+  const content = {
+    開工: ["收信、排今天的順序", "自己的位子"],
+    專注時段一: ["當天最難的那件事", "不開通訊軟體"],
+    專注時段二: ["接續上一段", ""],
+    "會議／協作": ["會議與回覆", ""],
+    收尾與明日計畫: ["寫下明天的第一件事", ""]
   };
-  const 內容 = {
-    開工: { 科目: "收信、排今天的順序", 老師: "自己的位子" },
-    專注時段一: { 科目: "當天最難的那件事", 老師: "不開通訊軟體" },
-    專注時段二: { 科目: "接續上一段", 老師: "" },
-    "會議／協作": { 科目: "會議與回覆", 老師: "" },
-    收尾與明日計畫: { 科目: "寫下明天的第一件事", 老師: "" }
-  };
-  const 週 = {};
-  for (const d of WEEK_ORDER) {
-    週[d] = (d === "六" || d === "日") ? null
-          : { 時段表: "工作日", 內容: JSON.parse(JSON.stringify(內容)) };
+  const days = {};
+  for (const d of DAYS) {
+    days[d] = (d === "sat" || d === "sun") ? null : buildDay(shape, content);
   }
   return {
-    名稱: "上班族範例",
-    欄位: { 主: "目標", 次: "地點" },
-    鈴聲: { 上課: "toll", 下課: "fur-elise", 音量: 0.5 },
-    時段表: 表,
-    每週: 週,
-    停課日: []
+    id: id,
+    name: "上班族範例",
+    labels: { primary: "目標", secondary: "地點" },
+    bells: { start: "toll", end: "fur-elise", volume: 0.5 },
+    days: days,
+    holidays: []
   };
 }
 
 function defaultConfig() {
   return {
-    格式版本: 2,
-    外觀: { 主題: "auto", 注音: false, 看板: false, 滴答: true },
-    目前: "p1",
-    profiles: { p1: 國小課表("一年級（範例）", true) }
+    version: FORMAT_VERSION,
+    appearance: { theme: "auto", bopomofo: false, kiosk: false, tick: true },
+    current: "p1",
+    profiles: [schoolProfile("p1", "一年級（範例）", true)]
   };
 }
 
@@ -808,7 +803,19 @@ function textNode(text, withBpmf) {
   if (!withBpmf) return document.createTextNode(text);
   const frag = document.createDocumentFragment();
   for (const [ch, r] of annotate(text)) {
-    if (!r) { frag.appendChild(document.createTextNode(ch)); continue; }
+    if (!r) {
+      // 查不到讀音的漢字也要進格子，不然會比有注音的字窄一截；
+      // 標點、英數不進格子，那樣反而難看。
+      if (/[㐀-鿿]/.test(ch)) {
+        const pad = document.createElement("span");
+        pad.className = "bpmf-pad";
+        pad.textContent = ch;
+        frag.appendChild(pad);
+      } else {
+        frag.appendChild(document.createTextNode(ch));
+      }
+      continue;
+    }
     const ruby = document.createElement("ruby");
     ruby.appendChild(document.createTextNode(ch));
     const rt = document.createElement("rt");
@@ -820,7 +827,7 @@ function textNode(text, withBpmf) {
 }
 
 function setText(el, text) {
-  el.replaceChildren(textNode(text, cfg.外觀.注音));
+  el.replaceChildren(textNode(text, cfg.appearance.bopomofo));
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -828,14 +835,14 @@ function setText(el, text) {
    ═══════════════════════════════════════════════════════════════ */
 
 const BELLS = {
-  "campus":            { 名稱: "校園鐘聲（長）", make: makeCampus },
-  "campus-short":      { 名稱: "校園鐘聲（短）", make: makeCampusShort },
-  "westminster":       { 名稱: "西敏長鐘聲（鑄鐘音色）", make: makeWestminsterFull },
-  "westminster-short": { 名稱: "西敏短鐘聲（鑄鐘音色）", make: makeWestminsterShort },
-  "toll":              { 名稱: "單音大鐘",   make: makeToll },
-  "buzzer":            { 名稱: "電鈴",       make: makeBuzzer },
-  "fur-elise":         { 名稱: "給愛麗絲",   make: makeFurElise },
-  "none":              { 名稱: "不響（靜音）", make: null }
+  "campus":            { label: "校園鐘聲（長）", make: makeCampus },
+  "campus-short":      { label: "校園鐘聲（短）", make: makeCampusShort },
+  "westminster":       { label: "西敏長鐘聲（鑄鐘音色）", make: makeWestminsterFull },
+  "westminster-short": { label: "西敏短鐘聲（鑄鐘音色）", make: makeWestminsterShort },
+  "toll":              { label: "單音大鐘",   make: makeToll },
+  "buzzer":            { label: "電鈴",       make: makeBuzzer },
+  "fur-elise":         { label: "給愛麗絲",   make: makeFurElise },
+  "none":              { label: "不響（靜音）", make: null }
 };
 
 const W = { Gs: 415.30, Fs: 369.99, E: 329.63, B: 246.94 };   // 西敏寺原調 E 大調
@@ -1073,7 +1080,7 @@ const Audio_ = {
       if (!AC) return false;
       this.ctx = new AC();
       this.master = this.ctx.createGain();
-      this.master.gain.value = prof().鈴聲.音量;
+      this.master.gain.value = prof().bells.volume;
       this.master.connect(this.ctx.destination);
     }
     if (this.ctx.state !== "running") {
@@ -1163,30 +1170,25 @@ const fmtHM = mins =>
 const dateKey = d =>
   d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 
-/** 某一天的設定（週末、停課日、沒指定時段表 = null） */
-function dayPlan(p, date) {
-  if ((p.停課日 || []).includes(dateKey(date))) return null;
-  const d = p.每週[WEEKDAYS[date.getDay()]];
-  if (!d || !d.時段表 || !p.時段表[d.時段表]) return null;
-  return d;
+/** 這一天有沒有安排（週末、停課日、空清單 = 沒有） */
+function dayOf(p, date) {
+  if ((p.holidays || []).includes(dateKey(date))) return null;
+  const list = p.days[DAY_BY_INDEX[date.getDay()]];
+  return (Array.isArray(list) && list.length) ? list : null;
 }
 
-/** 某一天的時段（含科目老師，已排序、時間已驗證） */
+/** 某一天的時段。沒有跨表對應了 —— 時間和科目本來就在同一筆。 */
 function periodsFor(p, date) {
-  const plan = dayPlan(p, date);
-  if (!plan) return [];
-  const content = plan.內容 || {};
-  return (p.時段表[plan.時段表] || [])
-    .map(r => {
-      const c = content[r.名稱] || {};
-      return {
-        名稱: r.名稱,
-        主: (c.科目 || "").trim(),
-        次: (c.老師 || "").trim(),
-        s: parseHM(r.開始), e: parseHM(r.結束),
-        bs: !!r.開始響鈴, be: !!r.結束響鈴
-      };
-    })
+  const list = dayOf(p, date);
+  if (!list) return [];
+  return list
+    .map(r => ({
+      name: r.name,
+      subject: (r.subject || "").trim(),
+      teacher: (r.teacher || "").trim(),
+      s: parseHM(r.start), e: parseHM(r.end),
+      bs: !!r.ringStart, be: !!r.ringEnd
+    }))
     .filter(r => r.s !== null && r.e !== null && r.e >= r.s)
     .sort((a, b) => a.s - b.s || a.e - b.e);
 }
@@ -1202,8 +1204,8 @@ function bellsFor(p, date) {
     if (ev.kind === "end" && kind === "start") ev.kind = "start";   // 上課鐘優先
   };
   for (const r of periodsFor(p, date)) {
-    if (r.bs) add(r.s, "start", r.名稱 + "開始");
-    if (r.be) add(r.e, "end", r.名稱 + "結束");
+    if (r.bs) add(r.s, "start", r.name + "開始");
+    if (r.be) add(r.e, "end", r.name + "結束");
   }
   return [...map.values()].sort((a, b) => a.min - b.min);
 }
@@ -1235,132 +1237,111 @@ function currentPeriod(p, now) {
    5. 設定存取（含舊格式搬移）
    ═══════════════════════════════════════════════════════════════ */
 
-const LS_KEY = "schoolbell.v2";
-const LS_OLD = "schoolbell.v1";
+const LS_KEY = "kidz-schedule.v3";
+const LS_LEGACY = ["schoolbell.v2", "schoolbell.v1"];
 
-function cleanProfile(raw, fallbackName) {
-  const base = 國小課表(fallbackName || "課表");
+const str = (v, max) => String(v == null ? "" : v).slice(0, max).trim();
+
+/** 清一天的時段清單。null／空陣列 = 這天不上課。 */
+function cleanDay(raw) {
+  if (!Array.isArray(raw)) return null;
+  const out = raw
+    .filter(r => r && parseHM(r.start) !== null && parseHM(r.end) !== null)
+    .map(r => period(
+      str(r.name, 20) || "時段",
+      fmtHM(parseHM(r.start)), fmtHM(parseHM(r.end)),
+      !!r.ringStart, !!r.ringEnd,
+      str(r.subject, 40), str(r.teacher, 40)
+    ))
+    .sort((a, b) => parseHM(a.start) - parseHM(b.start));
+  return out.length ? out : null;
+}
+
+function cleanProfile(raw, id, fallbackName) {
+  const base = schoolProfile(id, fallbackName);
   if (!raw || typeof raw !== "object") return base;
 
   const out = {
-    名稱: (typeof raw.名稱 === "string" && raw.名稱.trim()) ? raw.名稱.trim().slice(0, 20) : base.名稱,
-    欄位: { 主: "科目", 次: "老師" },
-    鈴聲: { 上課: "campus", 下課: "campus", 音量: 0.7 },
-    時段表: {},
-    每週: {},
-    停課日: []
+    id: id,
+    name: str(raw.name, 20) || fallbackName || "課表",
+    labels: { primary: "科目", secondary: "老師" },
+    bells: { start: "campus", end: "campus", volume: 0.7 },
+    days: {},
+    holidays: []
   };
 
-  if (raw.欄位 && typeof raw.欄位 === "object") {
-    if (typeof raw.欄位.主 === "string" && raw.欄位.主.trim()) out.欄位.主 = raw.欄位.主.trim().slice(0, 6);
-    if (typeof raw.欄位.次 === "string" && raw.欄位.次.trim()) out.欄位.次 = raw.欄位.次.trim().slice(0, 6);
+  if (raw.labels && typeof raw.labels === "object") {
+    out.labels.primary = str(raw.labels.primary, 6) || "科目";
+    out.labels.secondary = str(raw.labels.secondary, 6) || "老師";
   }
 
-  if (raw.鈴聲 && typeof raw.鈴聲 === "object") {
-    if (BELLS[raw.鈴聲.上課]) out.鈴聲.上課 = raw.鈴聲.上課;
-    if (BELLS[raw.鈴聲.下課]) out.鈴聲.下課 = raw.鈴聲.下課;
-    const v = raw.鈴聲.音量;
-    if (typeof v === "number" && isFinite(v)) out.鈴聲.音量 = Math.min(1, Math.max(0, v));
+  if (raw.bells && typeof raw.bells === "object") {
+    if (BELLS[raw.bells.start]) out.bells.start = raw.bells.start;
+    if (BELLS[raw.bells.end]) out.bells.end = raw.bells.end;
+    const v = raw.bells.volume;
+    if (typeof v === "number" && isFinite(v)) out.bells.volume = Math.min(1, Math.max(0, v));
   }
 
-  const src = (raw.時段表 && typeof raw.時段表 === "object") ? raw.時段表 : null;
-  if (src) {
-    for (const [name, rows] of Object.entries(src)) {
-      if (!Array.isArray(rows) || !String(name).trim()) continue;
-      const seen = new Set();
-      out.時段表[String(name).slice(0, 20)] = rows
-        .filter(r => r && parseHM(r.開始) !== null && parseHM(r.結束) !== null)
-        .map(r => {
-          let n = String(r.名稱 == null ? "" : r.名稱).slice(0, 20).trim() || "時段";
-          while (seen.has(n)) n += "＊";     // 名稱是科目對應的鍵，必須唯一
-          seen.add(n);
-          return slot(n, fmtHM(parseHM(r.開始)), fmtHM(parseHM(r.結束)), !!r.開始響鈴, !!r.結束響鈴);
-        })
-        .sort((a, b) => parseHM(a.開始) - parseHM(b.開始));
-    }
-  }
-  if (!Object.keys(out.時段表).length) out.時段表 = 國小時段();
+  for (const d of DAYS) out.days[d] = cleanDay(raw.days && raw.days[d]);
+  if (!DAYS.some(d => out.days[d])) out.days = base.days;   // 全空就給預設，免得畫面一片空白
 
-  const names = Object.keys(out.時段表);
-  for (const d of WEEK_ORDER) {
-    const raw2 = raw.每週 && raw.每週[d];
-    if (!raw2 || typeof raw2 !== "object" || !names.includes(raw2.時段表)) { out.每週[d] = null; continue; }
-    const 內容 = {};
-    if (raw2.內容 && typeof raw2.內容 === "object") {
-      for (const [k, v] of Object.entries(raw2.內容)) {
-        if (!v || typeof v !== "object") continue;
-        const 科目 = String(v.科目 == null ? "" : v.科目).slice(0, 30);
-        const 老師 = String(v.老師 == null ? "" : v.老師).slice(0, 30);
-        if (科目 || 老師) 內容[String(k).slice(0, 20)] = { 科目, 老師 };
-      }
-    }
-    out.每週[d] = { 時段表: raw2.時段表, 內容 };
-  }
-  if (!WEEK_ORDER.some(d => out.每週[d])) {
-    for (const d of ["一", "二", "三", "四", "五"]) out.每週[d] = { 時段表: names[0], 內容: {} };
-  }
-
-  if (Array.isArray(raw.停課日)) {
-    out.停課日 = raw.停課日.filter(s => /^\d{4}-\d{2}-\d{2}$/.test(String(s))).slice(0, 400);
+  if (Array.isArray(raw.holidays)) {
+    out.holidays = raw.holidays.filter(s => /^\d{4}-\d{2}-\d{2}$/.test(String(s))).slice(0, 400);
   }
   return out;
 }
 
-/** v1（單一課表、時間與科目同層）→ v2 */
-function migrateV1(v1) {
-  const p = 國小課表(v1.名稱 || "課表");
-  p.鈴聲.音量 = (typeof v1.音量 === "number") ? v1.音量 : 0.7;
-  if (v1.鈴聲) {
-    if (BELLS[v1.鈴聲.上課]) p.鈴聲.上課 = v1.鈴聲.上課;
-    if (BELLS[v1.鈴聲.下課]) p.鈴聲.下課 = v1.鈴聲.下課;
+const FORMAT_VERSION = 3;
+
+/**
+ * 版號檢查。有版號卻不檢查比沒有版號更糟 —— 餵進不相容的檔案時
+ * 會安靜地產出垃圾，而不是明確告訴使用者哪裡不對。
+ * 回傳錯誤訊息字串，或 null 表示可以讀。
+ */
+function versionError(raw) {
+  if (!raw || typeof raw !== "object") return "這不是一份設定檔。";
+  const v = raw.version;
+  if (v === undefined) return null;                    // 沒寫就當成目前版本，寬鬆處理
+  if (typeof v !== "number" || !isFinite(v)) return "設定檔的 version 欄位不是數字。";
+  if (v > FORMAT_VERSION) {
+    return "這份設定是比較新的格式（version " + v + "），這個頁面只讀到 version " +
+           FORMAT_VERSION + "。請先重新整理頁面取得最新版。";
   }
-  if (v1.作息表 && typeof v1.作息表 === "object") {
-    p.時段表 = {};
-    for (const [n, rows] of Object.entries(v1.作息表)) {
-      if (!Array.isArray(rows)) continue;
-      p.時段表[n] = rows.map(r => slot(r.名稱, r.開始, r.結束, !!r.開始響鈴, !!r.結束響鈴));
-    }
+  if (v < FORMAT_VERSION) {
+    return "這份設定是舊格式（version " + v + "），已經不支援。請在新版重新建立課表。";
   }
-  // v1 沒有科目欄位，搬過來一定是空的 —— 補上範例內容，畫面才不會是一片空白
-  const names = Object.keys(p.時段表), demo = 範例內容();
-  for (const d of WEEK_ORDER) {
-    const t = v1.每週 && v1.每週[d];
-    p.每週[d] = (typeof t === "string" && names.includes(t))
-      ? { 時段表: t, 內容: demo[d] || {} } : null;
-  }
-  if (Array.isArray(v1.停課日)) p.停課日 = v1.停課日;
-  return cleanProfile(p, p.名稱);
+  return null;
 }
 
 function cleanConfig(raw) {
   const out = defaultConfig();
   if (!raw || typeof raw !== "object") return out;
 
-  // 單一 profile 的檔案（有時段表／作息表但沒有 profiles）
-  if (!raw.profiles && (raw.時段表 || raw.作息表)) {
-    const p = raw.時段表 ? cleanProfile(raw) : migrateV1(raw);
-    return { 格式版本: 2, 外觀: out.外觀, 目前: "p1", profiles: { p1: p } };
+  // 單一 profile 的檔案（只有 days、沒有 profiles）
+  if (!raw.profiles && raw.days) {
+    return { version: FORMAT_VERSION, appearance: out.appearance, current: "p1",
+             profiles: [cleanProfile(raw, "p1", "匯入的課表")] };
   }
 
-  if (raw.外觀 && typeof raw.外觀 === "object") {
-    if (["auto", "paper", "chalk"].includes(raw.外觀.主題)) out.外觀.主題 = raw.外觀.主題;
-    out.外觀.注音 = !!raw.外觀.注音;
-    out.外觀.滴答 = raw.外觀.滴答 !== false;   // 沒寫就是開著
-    out.外觀.看板 = !!raw.外觀.看板;
+  if (raw.appearance && typeof raw.appearance === "object") {
+    const a = raw.appearance;
+    if (["auto", "paper", "chalk"].includes(a.theme)) out.appearance.theme = a.theme;
+    out.appearance.bopomofo = !!a.bopomofo;
+    out.appearance.kiosk = !!a.kiosk;
+    out.appearance.tick = a.tick !== false;      // 沒寫就是開著
   }
 
-  if (raw.profiles && typeof raw.profiles === "object") {
-    const ps = {};
-    let i = 0;
-    for (const [id, p] of Object.entries(raw.profiles)) {
-      if (++i > 20) break;
-      const key = /^[A-Za-z0-9_-]{1,24}$/.test(id) ? id : "p" + i;
-      ps[key] = cleanProfile(p, "課表 " + i);
-    }
-    if (Object.keys(ps).length) {
-      out.profiles = ps;
-      out.目前 = (typeof raw.目前 === "string" && ps[raw.目前]) ? raw.目前 : Object.keys(ps)[0];
-    }
+  if (Array.isArray(raw.profiles) && raw.profiles.length) {
+    const used = new Set();
+    const list = [];
+    raw.profiles.slice(0, 20).forEach((p, i) => {
+      let id = (p && /^[A-Za-z0-9_-]{1,24}$/.test(String(p.id))) ? String(p.id) : "p" + (i + 1);
+      while (used.has(id)) id += "_";
+      used.add(id);
+      list.push(cleanProfile(p, id, "課表 " + (i + 1)));
+    });
+    out.profiles = list;
+    out.current = list.some(p => p.id === raw.current) ? raw.current : list[0].id;
   }
   return out;
 }
@@ -1369,25 +1350,27 @@ function loadConfig() {
   const h = location.hash.replace(/^#/, "");
   if (h.startsWith("s=")) {
     try {
-      const c = cleanConfig(JSON.parse(b64ToStr(h.slice(2))));
+      const raw = JSON.parse(b64ToStr(h.slice(2)));
+      const err = versionError(raw);
       history.replaceState(null, "", location.pathname + location.search);
-      saveConfig(c);
-      setTimeout(() => toast("已套用連結裡的設定"), 300);
-      return c;
-    } catch (e) { /* 壞掉的連結就忽略 */ }
+      if (err) { setTimeout(() => toast(err), 400); }
+      else {
+        const c = cleanConfig(raw);
+        saveConfig(c);
+        setTimeout(() => toast("已套用連結裡的設定"), 300);
+        return c;
+      }
+    } catch (e) { /* 壞掉的連結就忽略，用本機設定 */ }
   }
   try {
     const txt = localStorage.getItem(LS_KEY);
-    if (txt) return cleanConfig(JSON.parse(txt));
-  } catch (e) {}
-  try {
-    const old = localStorage.getItem(LS_OLD);          // 舊版設定自動搬過來
-    if (old) {
-      const c = cleanConfig(JSON.parse(old));
-      saveConfig(c);
-      return c;
+    if (txt) {
+      const raw = JSON.parse(txt);
+      if (!versionError(raw)) return cleanConfig(raw);
     }
   } catch (e) {}
+  // 舊版（schoolbell.v1 / v2）的設定不再讀取，直接清掉，免得一直佔著空間
+  for (const k of LS_LEGACY) { try { localStorage.removeItem(k); } catch (e) {} }
   return defaultConfig();
 }
 
@@ -1417,10 +1400,10 @@ function b64ToStr(b64) {
 const $ = id => document.getElementById(id);
 
 let cfg = loadConfig();
-const prof = () => cfg.profiles[cfg.目前];
+const prof = () => cfg.profiles.find(p => p.id === cfg.current) || cfg.profiles[0];
 
-let editTableName = null;     // 正在編輯哪一張時段表
-let editDay = "一";           // 正在編輯星期幾
+let editDayKey = "mon";      // 正在編輯星期幾
+
 let lastTickMin = null, lastTickDay = null;
 let rangMark = null;
 
@@ -1446,27 +1429,27 @@ function renderNow(now) {
   const cur = currentPeriod(p, now);
   const nxt = nextBell(p, now);
 
-  $("today").textContent = dateKey(now) + "（" + WEEKDAYS[now.getDay()] + "）";
+  $("today").textContent = dateKey(now) + "（" + DAY_LABEL[DAY_BY_INDEX[now.getDay()]] + "）";
   $("nowClock").textContent = now.toLocaleTimeString("zh-TW", { hour12: false });
 
   const card = $("nowCard"), countEl = $("nowCount");
   const secs = nxt ? Math.max(0, Math.round((nxt.at - now) / 1000)) : null;
   const soon = secs !== null && secs <= 60;
 
-  let kind = cur ? periodKind(cur.名稱) : "break";
+  let kind = cur ? periodKind(cur.name) : "break";
   if (!nxt) kind = "idle";
   if (soon) kind = "soon";
   setStateColor(card, kind);
 
   let chip, period, sub = "";
   if (cur) {
-    chip = /午休|午餐|用餐|休息/.test(cur.名稱) ? "休息中"
-         : /放學|下班/.test(cur.名稱) ? "結束" : "進行中";
-    period = cur.主 ? cur.主 : cur.名稱;
-    sub = cur.主
-      ? cur.名稱 + (cur.次 ? "・" + cur.次 : "")
-      : (cur.次 || "");
-  } else if (dayPlan(p, now)) {
+    chip = /午休|午餐|用餐|休息/.test(cur.name) ? "休息中"
+         : /放學|下班/.test(cur.name) ? "結束" : "進行中";
+    period = cur.subject ? cur.subject : cur.name;
+    sub = cur.subject
+      ? cur.name + (cur.teacher ? "・" + cur.teacher : "")
+      : (cur.teacher || "");
+  } else if (dayOf(p, now)) {
     const ps = periodsFor(p, now);
     const m = now.getHours() * 60 + now.getMinutes();
     if (ps.length && m < ps[0].s)                    { chip = "尚未開始"; period = "還沒上課"; }
@@ -1484,7 +1467,7 @@ function renderNow(now) {
       : String(m2).padStart(2, "0") + ":" + String(s2).padStart(2, "0");
     countEl.classList.toggle("soon", soon);
     $("nowLabel").textContent = "距離　" + nxt.ev.labels.join("／") + "　" +
-      fmtHM(nxt.ev.min) + (nxt.sameDay ? "" : "（" + WEEKDAYS[nxt.at.getDay()] + "）");
+      fmtHM(nxt.ev.min) + (nxt.sameDay ? "" : "（" + DAY_LABEL[DAY_BY_INDEX[nxt.at.getDay()]] + "）");
   } else {
     countEl.textContent = "—";
     countEl.classList.remove("soon");
@@ -1506,9 +1489,7 @@ function renderTimeline(now) {
     el.replaceChildren();
     const d = document.createElement("p");
     d.className = "tl-empty";
-    d.textContent = dayPlan(p, now)
-      ? "這一天的時段表是空的。打開「時段時間」加幾個時段。"
-      : "今天沒有安排。要改的話打開「時段時間」最下面的「每天用哪一張時段表」。";
+    d.textContent = "今天沒有安排。打開下面的「編輯課表」，選今天，加幾個時段就可以了。";
     el.appendChild(d);
     return;
   }
@@ -1520,7 +1501,7 @@ function renderTimeline(now) {
     const div = document.createElement("div");
     const active = r.e > r.s && m >= r.s && m < r.e;
     div.className = "tl-row" + (active ? " active" : (m >= r.e ? " past" : ""));
-    if (active) setStateColor(div, periodKind(r.名稱));
+    if (active) setStateColor(div, periodKind(r.name));
 
     const time = document.createElement("div");
     time.className = "tl-time num";
@@ -1536,13 +1517,13 @@ function renderTimeline(now) {
     main.className = "tl-main";
     const nm = document.createElement("div");
     nm.className = "tl-name";
-    nm.appendChild(textNode(r.主 || r.名稱, cfg.外觀.注音));
+    nm.appendChild(textNode(r.subject || r.name, cfg.appearance.bopomofo));
     main.appendChild(nm);
-    const subText = r.主 ? (r.名稱 + (r.次 ? "・" + r.次 : "")) : r.次;
+    const subText = r.subject ? (r.name + (r.teacher ? "・" + r.teacher : "")) : r.teacher;
     if (subText) {
       const sb = document.createElement("div");
       sb.className = "tl-sub";
-      sb.appendChild(textNode(subText, cfg.外觀.注音));
+      sb.appendChild(textNode(subText, cfg.appearance.bopomofo));
       main.appendChild(sb);
     }
 
@@ -1561,7 +1542,7 @@ function renderTimeline(now) {
       div.appendChild(prog);
     }
 
-    if (rangMark && rangMark.name === r.名稱 && Date.now() - rangMark.t < 2500) div.classList.add("rang");
+    if (rangMark && rangMark.name === r.name && Date.now() - rangMark.t < 2500) div.classList.add("rang");
     frag.appendChild(div);
   }
   el.replaceChildren(frag);
@@ -1579,7 +1560,7 @@ function tick() {
   renderTimeline(now);
 
   // 最後一分鐘的滴答，和畫面上的紅色閃爍同步。一秒一下，高低交替。
-  if (cfg.外觀.滴答 && Audio_.armed && secsToBell !== null && secsToBell > 0 && secsToBell <= 60) {
+  if (cfg.appearance.tick && Audio_.armed && secsToBell !== null && secsToBell > 0 && secsToBell <= 60) {
     const s = now.getSeconds();
     if (s !== lastTockSec) { lastTockSec = s; Audio_.tock(secsToBell % 2 === 0); }
   } else {
@@ -1608,7 +1589,7 @@ function tick() {
 
 function ring(ev) {
   const p = prof();
-  const key = ev.kind === "start" ? p.鈴聲.上課 : p.鈴聲.下課;
+  const key = ev.kind === "start" ? p.bells.start : p.bells.end;
   rangMark = { name: ev.labels[0].replace(/(開始|結束)$/, ""), t: Date.now() };
   if (Audio_.armed) Audio_.play(key);
   toast("🔔 " + ev.labels.join("／"));
@@ -1659,15 +1640,15 @@ function toast(msg) {
 }
 
 function applyAppearance() {
-  document.documentElement.setAttribute("data-skin", cfg.外觀.主題);
-  document.body.classList.toggle("bpmf-on", cfg.外觀.注音);
-  document.body.classList.toggle("kiosk", cfg.外觀.看板);
-  document.documentElement.style.setProperty("--scale", cfg.外觀.看板 ? "1.5" : "1");
-  $("bpmf").checked = cfg.外觀.注音;
-  $("kiosk").checked = cfg.外觀.看板;
-  $("tock").checked = cfg.外觀.滴答;
+  document.documentElement.setAttribute("data-skin", cfg.appearance.theme);
+  document.body.classList.toggle("bpmf-on", cfg.appearance.bopomofo);
+  document.body.classList.toggle("kiosk", cfg.appearance.kiosk);
+  document.documentElement.style.setProperty("--scale", cfg.appearance.kiosk ? "1.5" : "1");
+  $("bpmf").checked = cfg.appearance.bopomofo;
+  $("kiosk").checked = cfg.appearance.kiosk;
+  $("tock").checked = cfg.appearance.tick;
   for (const b of $("skinSeg").children) {
-    b.setAttribute("aria-pressed", String(b.dataset.skin === cfg.外觀.主題));
+    b.setAttribute("aria-pressed", String(b.dataset.skin === cfg.appearance.theme));
   }
 }
 
@@ -1690,357 +1671,313 @@ function renderDonate() {
 function renderProfPick() {
   const s = $("profPick");
   s.replaceChildren();
-  for (const [id, p] of Object.entries(cfg.profiles)) {
+  for (const p of cfg.profiles) {
     const o = document.createElement("option");
-    o.value = id; o.textContent = p.名稱;
-    if (id === cfg.目前) o.selected = true;
+    o.value = p.id; o.textContent = p.name;
+    if (p.id === cfg.current) o.selected = true;
     s.appendChild(o);
   }
 }
 
 function fillBellSelects() {
   const p = prof();
-  for (const [sel, cur] of [["selBellStart", p.鈴聲.上課], ["selBellEnd", p.鈴聲.下課]]) {
+  for (const [sel, cur] of [["selBellStart", p.bells.start], ["selBellEnd", p.bells.end]]) {
     const s = $(sel);
     s.replaceChildren();
     for (const [k, v] of Object.entries(BELLS)) {
       const o = document.createElement("option");
-      o.value = k; o.textContent = v.名稱;
+      o.value = k; o.textContent = v.label;
       if (k === cur) o.selected = true;
       s.appendChild(o);
     }
   }
-  $("vol").value = Math.round(p.鈴聲.音量 * 100);
-  $("volVal").textContent = Math.round(p.鈴聲.音量 * 100) + "%";
-  Audio_.setVolume(p.鈴聲.音量);
+  $("vol").value = Math.round(p.bells.volume * 100);
+  $("volVal").textContent = Math.round(p.bells.volume * 100) + "%";
+  Audio_.setVolume(p.bells.volume);
 }
 
-/* ── 時段時間 ── */
-
-function renderTimeTabs() {
-  const p = prof(), box = $("timeTabs");
-  const names = Object.keys(p.時段表);
-  if (!editTableName || !names.includes(editTableName)) editTableName = names[0] || null;
-  box.replaceChildren();
-  for (const n of names) {
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "tab"; b.setAttribute("role", "tab");
-    b.setAttribute("aria-selected", String(n === editTableName));
-    b.textContent = n;
-    b.addEventListener("click", () => { editTableName = n; renderTimeTabs(); renderTimeTable(); });
-    box.appendChild(b);
-  }
-}
-
-function renderTimeTable() {
-  const p = prof(), body = $("timeBody");
-  body.replaceChildren();
-  const rows = p.時段表[editTableName] || [];
-
-  rows.forEach((r, idx) => {
-    const tr = document.createElement("tr");
-    const mk = (type, val, key) => {
-      const i = document.createElement("input");
-      i.type = type; i.id = "t-" + idx + "-" + key;
-      if (type === "checkbox") i.checked = !!val; else i.value = val;
-      return i;
-    };
-
-    const tdN = document.createElement("td");
-    const inN = mk("text", r.名稱, "n");
-    inN.addEventListener("change", e => {
-      const old = r.名稱;
-      let v = e.target.value.slice(0, 20).trim() || "時段";
-      if (rows.some((o, j) => j !== idx && o.名稱 === v)) v += "＊";
-      r.名稱 = v;
-      e.target.value = v;
-      // 名稱是科目對應的鍵 —— 改名時把每天的科目一起帶過去
-      for (const d of WEEK_ORDER) {
-        const dd = p.每週[d];
-        if (dd && dd.時段表 === editTableName && dd.內容[old]) {
-          dd.內容[v] = dd.內容[old];
-          delete dd.內容[old];
-        }
-      }
-      commit(); renderDayTable();
-    });
-    tdN.appendChild(inN);
-
-    const tdS = document.createElement("td");
-    const inS = mk("time", r.開始, "s");
-    inS.addEventListener("change", e => {
-      if (parseHM(e.target.value) === null) { e.target.value = r.開始; return; }
-      r.開始 = e.target.value; commitSorted();
-    });
-    tdS.appendChild(inS);
-
-    const tdE = document.createElement("td");
-    const inE = mk("time", r.結束, "e");
-    inE.addEventListener("change", e => {
-      if (parseHM(e.target.value) === null) { e.target.value = r.結束; return; }
-      r.結束 = e.target.value; commitSorted();
-    });
-    tdE.appendChild(inE);
-
-    const tdBs = document.createElement("td"); tdBs.className = "chk";
-    const cS = mk("checkbox", r.開始響鈴, "bs");
-    cS.setAttribute("aria-label", r.名稱 + " 開始響鈴");
-    cS.addEventListener("change", e => { r.開始響鈴 = e.target.checked; commit(); });
-    tdBs.appendChild(cS);
-
-    const tdBe = document.createElement("td"); tdBe.className = "chk";
-    const cE = mk("checkbox", r.結束響鈴, "be");
-    cE.setAttribute("aria-label", r.名稱 + " 結束響鈴");
-    cE.addEventListener("change", e => { r.結束響鈴 = e.target.checked; commit(); });
-    tdBe.appendChild(cE);
-
-    const tdD = document.createElement("td");
-    const del = document.createElement("button");
-    del.type = "button"; del.className = "row-del"; del.textContent = "×";
-    del.title = "刪掉這個時段";
-    del.setAttribute("aria-label", "刪掉「" + r.名稱 + "」");
-    del.addEventListener("click", () => {
-      rows.splice(idx, 1);
-      commit(); renderTimeTable(); renderDayTable();
-    });
-    tdD.appendChild(del);
-
-    tr.append(tdN, tdS, tdE, tdBs, tdBe, tdD);
-    body.appendChild(tr);
-  });
-}
+/* ── 編輯課表 ──
+   一天一張表：時間和科目在同一列，沒有跨表對應。
+   「幾天共用同一套時間」用複製達成 —— 複製是你主動按的，
+   不像共用骨架那樣不問你就連動。 */
 
 function commit() { saveConfig(); tick(); }
 
 function commitSorted() {
-  const rows = prof().時段表[editTableName];
-  if (rows) rows.sort((a, b) => (parseHM(a.開始) ?? 0) - (parseHM(b.開始) ?? 0));
+  const list = prof().days[editDayKey];
+  if (list) list.sort((a, b) => (parseHM(a.start) ?? 0) - (parseHM(b.start) ?? 0));
   commit();
-  renderTimeTable();
   renderDayTable();
 }
-
-$("addSlot").addEventListener("click", () => {
-  const rows = prof().時段表[editTableName];
-  if (!rows) return;
-  const last = rows[rows.length - 1];
-  const base = last ? Math.min(23 * 60 + 50, (parseHM(last.結束) ?? 480) + 10) : 8 * 60;
-  let n = "新時段", k = 1;
-  while (rows.some(r => r.名稱 === n)) n = "新時段" + (++k);
-  rows.push(slot(n, fmtHM(base), fmtHM(Math.min(23 * 60 + 59, base + 40)), true, true));
-  commitSorted();
-});
-
-$("addTable").addEventListener("click", () => {
-  const p = prof();
-  const name = (prompt("新時段表的名稱？（例如：週三半天、考試日）", "新時段表") || "").trim().slice(0, 20);
-  if (!name) return;
-  if (p.時段表[name]) { toast("已經有同名的時段表了"); return; }
-  p.時段表[name] = [slot("第一節", "08:40", "09:20", true, true)];
-  editTableName = name;
-  commit(); renderTimeTabs(); renderTimeTable(); renderWkGrid();
-});
-
-$("renTable").addEventListener("click", () => {
-  const p = prof();
-  if (!editTableName) return;
-  const name = (prompt("改成什麼名字？", editTableName) || "").trim().slice(0, 20);
-  if (!name || name === editTableName) return;
-  if (p.時段表[name]) { toast("已經有同名的時段表了"); return; }
-  p.時段表[name] = p.時段表[editTableName];
-  delete p.時段表[editTableName];
-  for (const d of WEEK_ORDER) if (p.每週[d] && p.每週[d].時段表 === editTableName) p.每週[d].時段表 = name;
-  editTableName = name;
-  commit(); renderTimeTabs(); renderTimeTable(); renderWkGrid();
-});
-
-$("delTable").addEventListener("click", () => {
-  const p = prof();
-  const names = Object.keys(p.時段表);
-  if (names.length <= 1) { toast("至少要留一張時段表"); return; }
-  if (!confirm("刪掉「" + editTableName + "」？用到它的日子會變成不上課。")) return;
-  delete p.時段表[editTableName];
-  for (const d of WEEK_ORDER) if (p.每週[d] && p.每週[d].時段表 === editTableName) p.每週[d] = null;
-  editTableName = Object.keys(p.時段表)[0];
-  commit(); renderTimeTabs(); renderTimeTable(); renderWkGrid(); renderDayTabs(); renderDayTable();
-});
-
-function renderWkGrid() {
-  const p = prof(), g = $("wkGrid");
-  g.replaceChildren();
-  const names = Object.keys(p.時段表);
-  for (const d of WEEK_ORDER) {
-    const cell = document.createElement("div");
-    cell.className = "wk-cell";
-    const lab = document.createElement("span");
-    lab.textContent = "星期" + d;
-    const sel = document.createElement("select");
-    sel.id = "wk-" + d;
-    sel.setAttribute("aria-label", "星期" + d + "用哪張時段表");
-    const none = document.createElement("option");
-    none.value = ""; none.textContent = "不上課";
-    sel.appendChild(none);
-    for (const n of names) {
-      const o = document.createElement("option");
-      o.value = n; o.textContent = n;
-      sel.appendChild(o);
-    }
-    sel.value = p.每週[d] ? p.每週[d].時段表 : "";
-    sel.addEventListener("change", e => {
-      const v = e.target.value;
-      if (!v) p.每週[d] = null;
-      else if (p.每週[d]) p.每週[d].時段表 = v;
-      else p.每週[d] = { 時段表: v, 內容: {} };
-      commit(); renderDayTabs(); renderDayTable();
-    });
-    cell.append(lab, sel);
-    g.appendChild(cell);
-  }
-}
-
-/* ── 每天上什麼 ── */
 
 function renderDayTabs() {
   const p = prof(), box = $("dayTabs");
   box.replaceChildren();
-  for (const d of WEEK_ORDER) {
+  for (const d of DAYS) {
     const b = document.createElement("button");
-    b.type = "button"; b.className = "tab" + (p.每週[d] ? "" : " off");
+    b.type = "button";
+    b.className = "tab" + (p.days[d] ? "" : " off");
     b.setAttribute("role", "tab");
-    b.setAttribute("aria-selected", String(d === editDay));
-    b.textContent = d;
-    b.setAttribute("aria-label", "星期" + d);
-    b.addEventListener("click", () => { editDay = d; renderDayTabs(); renderDayTable(); });
+    b.setAttribute("aria-selected", String(d === editDayKey));
+    b.setAttribute("aria-label", "星期" + DAY_LABEL[d]);
+    b.textContent = DAY_LABEL[d];
+    b.addEventListener("click", () => { editDayKey = d; renderDayTabs(); renderDayTable(); });
     box.appendChild(b);
   }
 }
 
 function renderDayTable() {
   const p = prof(), body = $("dayBody");
-  $("thMain").textContent = p.欄位.主;
-  $("thSecond").textContent = p.欄位.次;
+  $("thPrimary").textContent = p.labels.primary;
+  $("thSecondary").textContent = p.labels.secondary;
   body.replaceChildren();
 
-  const plan = p.每週[editDay];
-  if (!plan) {
-    $("dayHint").textContent = "星期" + editDay + "沒有安排。要上課的話，先到「時段時間」最下面指定一張時段表。";
+  const list = p.days[editDayKey];
+  const label = "星期" + DAY_LABEL[editDayKey];
+
+  if (!list || !list.length) {
+    $("dayHint").textContent = label + "目前不上課。按「＋ 加一個時段」開始排，" +
+      "或先到別天排好再用「複製整天到…」搬過來。";
     return;
   }
-  $("dayHint").textContent =
-    "星期" + editDay + "用「" + plan.時段表 + "」這張時段表。時間要改請到上面的「時段時間」——" +
-    "改一次，所有用這張表的日子都會跟著改。";
+  $("dayHint").textContent = label + "有 " + list.length + " 個時段。" +
+    "每一天的時間各自獨立 —— 要讓幾天一樣，用下面的複製。";
 
-  const rows = p.時段表[plan.時段表] || [];
-  for (const r of rows) {
+  list.forEach((r, idx) => {
     const tr = document.createElement("tr");
-
-    const tdN = document.createElement("td");
-    tdN.className = "cell-fixed";
-    tdN.textContent = r.名稱;
-
-    const tdT = document.createElement("td");
-    tdT.className = "cell-fixed num";
-    tdT.textContent = r.開始 === r.結束 ? r.開始 : r.開始 + "–" + r.結束;
-
-    const cur = plan.內容[r.名稱] || { 科目: "", 老師: "" };
-
-    const mkInput = (val, key, label) => {
+    const mk = (type, val, key) => {
       const i = document.createElement("input");
-      i.type = "text"; i.value = val; i.maxLength = 30;
-      i.id = "d-" + editDay + "-" + r.名稱 + "-" + key;
-      i.setAttribute("aria-label", r.名稱 + " " + label);
-      i.addEventListener("change", e => {
-        const v = e.target.value.slice(0, 30);
-        const slotData = plan.內容[r.名稱] || { 科目: "", 老師: "" };
-        slotData[key] = v;
-        if (slotData.科目 || slotData.老師) plan.內容[r.名稱] = slotData;
-        else delete plan.內容[r.名稱];
-        commit();
-      });
+      i.type = type;
+      i.id = "d-" + editDayKey + "-" + idx + "-" + key;
+      if (type === "checkbox") i.checked = !!val; else i.value = val;
       return i;
     };
 
-    const tdM = document.createElement("td");
-    tdM.appendChild(mkInput(cur.科目, "科目", p.欄位.主));
-    const tdS = document.createElement("td");
-    tdS.appendChild(mkInput(cur.老師, "老師", p.欄位.次));
+    const tdName = document.createElement("td");
+    const inName = mk("text", r.name, "name");
+    inName.setAttribute("aria-label", "時段名稱");
+    inName.maxLength = 20;
+    inName.addEventListener("change", e => {
+      r.name = e.target.value.slice(0, 20).trim() || "時段";
+      e.target.value = r.name;
+      commit();
+    });
+    tdName.appendChild(inName);
 
-    tr.append(tdN, tdT, tdM, tdS);
+    const tdStart = document.createElement("td");
+    const inStart = mk("time", r.start, "start");
+    inStart.setAttribute("aria-label", r.name + " 開始時間");
+    inStart.addEventListener("change", e => {
+      if (parseHM(e.target.value) === null) { e.target.value = r.start; return; }
+      r.start = e.target.value; commitSorted();
+    });
+    tdStart.appendChild(inStart);
+
+    const tdEnd = document.createElement("td");
+    const inEnd = mk("time", r.end, "end");
+    inEnd.setAttribute("aria-label", r.name + " 結束時間");
+    inEnd.addEventListener("change", e => {
+      if (parseHM(e.target.value) === null) { e.target.value = r.end; return; }
+      r.end = e.target.value; commitSorted();
+    });
+    tdEnd.appendChild(inEnd);
+
+    const mkText = (key, labelText) => {
+      const td = document.createElement("td");
+      const i = mk("text", r[key], key);
+      i.maxLength = 40;
+      i.setAttribute("aria-label", r.name + " " + labelText);
+      i.addEventListener("change", e => { r[key] = e.target.value.slice(0, 40); commit(); });
+      td.appendChild(i);
+      return td;
+    };
+
+    const tdRs = document.createElement("td");
+    tdRs.className = "chk";
+    const cbS = mk("checkbox", r.ringStart, "rs");
+    cbS.setAttribute("aria-label", r.name + " 開始時響鈴");
+    cbS.addEventListener("change", e => { r.ringStart = e.target.checked; commit(); });
+    tdRs.appendChild(cbS);
+
+    const tdRe = document.createElement("td");
+    tdRe.className = "chk";
+    const cbE = mk("checkbox", r.ringEnd, "re");
+    cbE.setAttribute("aria-label", r.name + " 結束時響鈴");
+    cbE.addEventListener("change", e => { r.ringEnd = e.target.checked; commit(); });
+    tdRe.appendChild(cbE);
+
+    const tdDel = document.createElement("td");
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "row-del";
+    del.textContent = "×";
+    del.title = "刪掉這個時段";
+    del.setAttribute("aria-label", "刪掉「" + r.name + "」");
+    del.addEventListener("click", () => {
+      list.splice(idx, 1);
+      if (!list.length) p.days[editDayKey] = null;
+      commit(); renderDayTabs(); renderDayTable();
+    });
+    tdDel.appendChild(del);
+
+    tr.append(tdName, tdStart, tdEnd,
+              mkText("subject", p.labels.primary), mkText("teacher", p.labels.secondary),
+              tdRs, tdRe, tdDel);
     body.appendChild(tr);
-  }
+  });
 }
 
+$("addSlot").addEventListener("click", () => {
+  const p = prof();
+  if (!p.days[editDayKey]) p.days[editDayKey] = [];
+  const list = p.days[editDayKey];
+  const last = list[list.length - 1];
+  const base = last ? Math.min(23 * 60 + 50, (parseHM(last.end) ?? 480) + 10) : 8 * 60;
+  list.push(period("新時段", fmtHM(base), fmtHM(Math.min(23 * 60 + 59, base + 40)), true, true));
+  commitSorted();
+  renderDayTabs();
+});
+
+$("clearDay").addEventListener("click", () => {
+  const p = prof();
+  if (!p.days[editDayKey]) { toast("這天本來就沒有安排"); return; }
+  if (!confirm("把星期" + DAY_LABEL[editDayKey] + "整天清空？")) return;
+  p.days[editDayKey] = null;
+  commit(); renderDayTabs(); renderDayTable();
+});
+
+/** 讓使用者勾選要複製到哪幾天 */
+function pickDays(title) {
+  const others = DAYS.filter(d => d !== editDayKey);
+  const prompt_ = title + "\n\n輸入要複製到哪幾天（可多選，用空白或逗號分開）：\n" +
+    others.map(d => DAY_LABEL[d]).join("  ") + "\n\n例如輸入：三 四 五";
+  const ans = prompt(prompt_, "");
+  if (ans === null) return null;
+  const wanted = new Set(ans.split(/[\s,，、]+/).filter(Boolean));
+  const targets = others.filter(d => wanted.has(DAY_LABEL[d]) || wanted.has("星期" + DAY_LABEL[d]));
+  if (!targets.length) { toast("沒有認出任何一天，沒有複製"); return null; }
+  return targets;
+}
+
+$("copyDayAll").addEventListener("click", () => {
+  const p = prof();
+  const src = p.days[editDayKey];
+  if (!src || !src.length) { toast("這天沒有東西可以複製"); return; }
+  const targets = pickDays("把星期" + DAY_LABEL[editDayKey] + "整天（時間＋" +
+                           p.labels.primary + "）複製過去，會覆蓋掉那幾天原本的內容。");
+  if (!targets) return;
+  for (const d of targets) p.days[d] = JSON.parse(JSON.stringify(src));
+  commit(); renderDayTabs(); renderDayTable();
+  toast("已複製到 " + targets.map(d => "星期" + DAY_LABEL[d]).join("、"));
+});
+
+$("copyDayTimes").addEventListener("click", () => {
+  const p = prof();
+  const src = p.days[editDayKey];
+  if (!src || !src.length) { toast("這天沒有東西可以複製"); return; }
+  const targets = pickDays("只把星期" + DAY_LABEL[editDayKey] + "的時間與響鈴設定複製過去，" +
+                           "那幾天原本的" + p.labels.primary + "會盡量保留（依時段名稱對應）。");
+  if (!targets) return;
+
+  for (const d of targets) {
+    const oldList = p.days[d] || [];
+    // 依時段名稱把原本的科目搬過來；對不到就留空
+    const keep = new Map();
+    for (const r of oldList) if (r.subject || r.teacher) keep.set(r.name, r);
+    p.days[d] = src.map(r => {
+      const k = keep.get(r.name);
+      return period(r.name, r.start, r.end, r.ringStart, r.ringEnd,
+                    k ? k.subject : "", k ? k.teacher : "");
+    });
+  }
+  commit(); renderDayTabs(); renderDayTable();
+  toast("時間已複製到 " + targets.map(d => "星期" + DAY_LABEL[d]).join("、"));
+});
 /* ── 課表管理 ── */
 
 function renderProfFields() {
   const p = prof();
-  $("profName").value = p.名稱;
-  $("fldMain").value = p.欄位.主;
-  $("fldSecond").value = p.欄位.次;
+  $("profName").value = p.name;
+  $("fldMain").value = p.labels.primary;
+  $("fldSecond").value = p.labels.secondary;
 }
 
 $("profName").addEventListener("change", e => {
-  prof().名稱 = e.target.value.slice(0, 20).trim() || "課表";
-  e.target.value = prof().名稱;
+  prof().name = e.target.value.slice(0, 20).trim() || "課表";
+  e.target.value = prof().name;
   commit(); renderProfPick();
 });
 $("fldMain").addEventListener("change", e => {
-  prof().欄位.主 = e.target.value.slice(0, 6).trim() || "科目";
-  e.target.value = prof().欄位.主;
+  prof().labels.primary = e.target.value.slice(0, 6).trim() || "科目";
+  e.target.value = prof().labels.primary;
   commit(); renderDayTable();
 });
 $("fldSecond").addEventListener("change", e => {
-  prof().欄位.次 = e.target.value.slice(0, 6).trim() || "老師";
-  e.target.value = prof().欄位.次;
+  prof().labels.secondary = e.target.value.slice(0, 6).trim() || "老師";
+  e.target.value = prof().labels.secondary;
   commit(); renderDayTable();
 });
 
 function newProfId() {
   let i = 1;
-  while (cfg.profiles["p" + i]) i++;
+  while (cfg.profiles.some(p => p.id === "p" + i)) i++;
   return "p" + i;
 }
 
 function addProfile(p) {
-  const id = newProfId();
-  cfg.profiles[id] = p;
-  cfg.目前 = id;
-  editTableName = null; editDay = "一";
+  p.id = newProfId();
+  cfg.profiles.push(p);
+  cfg.current = p.id;
+  editDayKey = "mon";
   saveConfig();
   refreshAll();
-  toast("已新增「" + p.名稱 + "」");
+  toast("已新增「" + p.name + "」");
 }
 
 $("profAdd").addEventListener("click", () => {
   const name = (prompt("新課表的名稱？（例如小孩的名字）", "新課表") || "").trim().slice(0, 20);
   if (!name) return;
-  addProfile(國小課表(name));
+  addProfile(schoolProfile("tmp", name));
 });
 
 $("profDup").addEventListener("click", () => {
-  const copy = cleanProfile(JSON.parse(JSON.stringify(prof())));
-  const name = (prompt("複製一份，叫什麼名字？", copy.名稱 + " 副本") || "").trim().slice(0, 20);
+  const copy = cleanProfile(JSON.parse(JSON.stringify(prof())), "tmp", prof().name);
+  const name = (prompt("複製一份，叫什麼名字？", copy.name + " 副本") || "").trim().slice(0, 20);
   if (!name) return;
-  copy.名稱 = name;
+  copy.name = name;
   addProfile(copy);
 });
 
-$("profWork").addEventListener("click", () => addProfile(上班族課表()));
+$("profWork").addEventListener("click", () => addProfile(workProfile("tmp")));
 
 $("profDel").addEventListener("click", () => {
-  if (Object.keys(cfg.profiles).length <= 1) { toast("至少要留一個課表"); return; }
-  if (!confirm("刪掉「" + prof().名稱 + "」？這個動作沒辦法復原。")) return;
-  delete cfg.profiles[cfg.目前];
-  cfg.目前 = Object.keys(cfg.profiles)[0];
-  editTableName = null; editDay = "一";
+  if (cfg.profiles.length <= 1) { toast("至少要留一個課表"); return; }
+  if (!confirm("刪掉「" + prof().name + "」？這個動作沒辦法復原。")) return;
+  const i = cfg.profiles.findIndex(p => p.id === cfg.current);
+  cfg.profiles.splice(i, 1);
+  cfg.current = cfg.profiles[Math.min(i, cfg.profiles.length - 1)].id;
+  editDayKey = "mon";
   saveConfig(); refreshAll();
   toast("已刪除");
 });
 
+/** 上下移動 —— 順序是使用者在意的資料，所以 profiles 用 array 而不是 dict */
+function moveProfile(delta) {
+  const i = cfg.profiles.findIndex(p => p.id === cfg.current);
+  const j = i + delta;
+  if (i < 0 || j < 0 || j >= cfg.profiles.length) { toast("已經在最" + (delta < 0 ? "前" : "後") + "面了"); return; }
+  const [me] = cfg.profiles.splice(i, 1);
+  cfg.profiles.splice(j, 0, me);
+  saveConfig(); renderProfPick();
+  toast("已移到第 " + (j + 1) + " 個");
+}
+$("profUp").addEventListener("click", () => moveProfile(-1));
+$("profDown").addEventListener("click", () => moveProfile(1));
+
 $("profPick").addEventListener("change", e => {
-  if (!cfg.profiles[e.target.value]) return;
-  cfg.目前 = e.target.value;
-  editTableName = null; editDay = "一";
+  if (!cfg.profiles.some(p => p.id === e.target.value)) return;
+  cfg.current = e.target.value;
+  editDayKey = "mon";
   saveConfig(); refreshAll();
 });
 
@@ -2057,7 +1994,7 @@ $("armBtn").addEventListener("click", async () => {
     return;
   }
   if (!await Audio_.arm()) { toast("這個瀏覽器擋住了聲音，再按一次試試"); return; }
-  Audio_.setVolume(prof().鈴聲.音量);
+  Audio_.setVolume(prof().bells.volume);
   $("armBtn").textContent = "鈴聲已開啟";
   $("armBtn").classList.add("btn-on");
   $("armNote").textContent = "會照下面的作息自動打鐘。讓這一頁開著、螢幕亮著就好。";
@@ -2070,49 +2007,49 @@ $("stopBtn").addEventListener("click", () => { Audio_.stopAll(); toast("已停�
 document.querySelectorAll("[data-try]").forEach(b => {
   b.addEventListener("click", async () => {
     await Audio_.arm();
-    Audio_.setVolume(prof().鈴聲.音量);
+    Audio_.setVolume(prof().bells.volume);
     Audio_.stopAll();
-    const key = b.dataset.try === "start" ? prof().鈴聲.上課 : prof().鈴聲.下課;
+    const key = b.dataset.try === "start" ? prof().bells.start : prof().bells.end;
     if (key === "none") { toast("這個選項是靜音"); return; }
     Audio_.play(key);
   });
 });
 
-$("selBellStart").addEventListener("change", e => { prof().鈴聲.上課 = e.target.value; saveConfig(); });
-$("selBellEnd").addEventListener("change", e => { prof().鈴聲.下課 = e.target.value; saveConfig(); });
+$("selBellStart").addEventListener("change", e => { prof().bells.start = e.target.value; saveConfig(); });
+$("selBellEnd").addEventListener("change", e => { prof().bells.end = e.target.value; saveConfig(); });
 
 $("vol").addEventListener("input", e => {
-  prof().鈴聲.音量 = e.target.value / 100;
+  prof().bells.volume = e.target.value / 100;
   $("volVal").textContent = e.target.value + "%";
-  Audio_.setVolume(prof().鈴聲.音量);
+  Audio_.setVolume(prof().bells.volume);
 });
 $("vol").addEventListener("change", () => saveConfig());
 
 $("skinSeg").addEventListener("click", e => {
   const b = e.target.closest("button[data-skin]");
   if (!b) return;
-  cfg.外觀.主題 = b.dataset.skin;
+  cfg.appearance.theme = b.dataset.skin;
   saveConfig(); applyAppearance();
 });
 
 $("bpmf").addEventListener("change", e => {
-  cfg.外觀.注音 = e.target.checked;
+  cfg.appearance.bopomofo = e.target.checked;
   saveConfig(); applyAppearance(); tick();
 });
 
 $("kiosk").addEventListener("change", e => {
-  cfg.外觀.看板 = e.target.checked;
+  cfg.appearance.kiosk = e.target.checked;
   saveConfig(); applyAppearance();
 });
 
 $("tock").addEventListener("change", e => {
-  cfg.外觀.滴答 = e.target.checked;
+  cfg.appearance.tick = e.target.checked;
   saveConfig();
   if (e.target.checked) Audio_.tock(true);   // 勾起來時試一聲
 });
 
 $("kioskExit").addEventListener("click", () => {
-  cfg.外觀.看板 = false;
+  cfg.appearance.kiosk = false;
   saveConfig(); applyAppearance();
 });
 
@@ -2127,7 +2064,7 @@ $("exportBtn").addEventListener("click", () => {
 
 $("exportOne").addEventListener("click", () => {
   $("ioBox").value = JSON.stringify(prof(), null, 2);
-  toast("已匯出「" + prof().名稱 + "」");
+  toast("已匯出「" + prof().name + "」");
 });
 
 $("importBtn").addEventListener("click", () => {
@@ -2137,13 +2074,18 @@ $("importBtn").addEventListener("click", () => {
   try { parsed = JSON.parse(txt); }
   catch (e) { toast("這段不是合法的 JSON，檢查一下有沒有少逗號或引號"); return; }
 
-  if (parsed && parsed.profiles) {
+  const err = versionError(parsed);
+  if (err) { toast(err); return; }
+
+  if (parsed && Array.isArray(parsed.profiles)) {
     cfg = cleanConfig(parsed);
-    editTableName = null; editDay = "一";
+    editDayKey = "mon";
     saveConfig(); refreshAll();
-    toast("已取代全部設定");
+    toast("已取代全部設定（" + cfg.profiles.length + " 個課表）");
+  } else if (parsed && parsed.days) {
+    addProfile(cleanProfile(parsed, "tmp", "匯入的課表"));
   } else {
-    addProfile(cleanProfile(parsed.時段表 ? parsed : migrateV1(parsed), "匯入的課表"));
+    toast("認不出這份 JSON —— 它需要有 profiles（整包）或 days（單一課表）。");
   }
 });
 
@@ -2179,9 +2121,6 @@ function refreshAll() {
   renderProfPick();
   fillBellSelects();
   renderProfFields();
-  renderTimeTabs();
-  renderTimeTable();
-  renderWkGrid();
   renderDayTabs();
   renderDayTable();
   applyAppearance();
@@ -2190,9 +2129,9 @@ function refreshAll() {
 
 // 網址參數：?kiosk=1 直接進看板模式（給牆上的裝置用）
 const qs = new URLSearchParams(location.search);
-if (qs.get("kiosk") === "1") cfg.外觀.看板 = true;
-if (["auto", "paper", "chalk"].includes(qs.get("skin"))) cfg.外觀.主題 = qs.get("skin");
-if (qs.get("bpmf") === "1") cfg.外觀.注音 = true;
+if (qs.get("kiosk") === "1") cfg.appearance.kiosk = true;
+if (["auto", "paper", "chalk"].includes(qs.get("skin"))) cfg.appearance.theme = qs.get("skin");
+if (qs.get("bpmf") === "1") cfg.appearance.bopomofo = true;
 
 refreshAll();
 updateWakeLock();
@@ -2202,7 +2141,7 @@ setInterval(tick, 500);
 if (qs.get("kiosk") === "1") {
   Audio_.arm().then(ok => {
     if (!ok) return;
-    Audio_.setVolume(prof().鈴聲.音量);
+    Audio_.setVolume(prof().bells.volume);
     $("armBtn").textContent = "鈴聲已開啟";
     $("armBtn").classList.add("btn-on");
   });
