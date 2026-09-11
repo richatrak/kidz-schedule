@@ -441,6 +441,10 @@ body.kiosk #kioskExit { display: inline-flex; }
           <input type="checkbox" id="kiosk">
           <span>看板模式</span>
         </label>
+        <label class="switch" for="tock">
+          <input type="checkbox" id="tock" checked>
+          <span>倒數滴答聲</span>
+        </label>
       </div>
 
       <div class="field">
@@ -710,7 +714,7 @@ function 上班族課表() {
 function defaultConfig() {
   return {
     格式版本: 2,
-    外觀: { 主題: "auto", 注音: false, 看板: false },
+    外觀: { 主題: "auto", 注音: false, 看板: false, 滴答: true },
     目前: "p1",
     profiles: { p1: 國小課表("一年級（範例）", true) }
   };
@@ -1100,6 +1104,33 @@ const Audio_ = {
     }, Math.max(500, (endAt - this.ctx.currentTime) * 1000 + 400));
   },
 
+  /** 倒數最後一分鐘的滴答聲。高低兩種交替，聽起來才像時鐘而不是電子嗶聲。 */
+  tock(high) {
+    if (!this.ctx || this.ctx.state !== "running") return;
+    const t = this.ctx.currentTime + 0.01;
+    const sr = this.ctx.sampleRate, len = Math.max(1, Math.floor(sr * 0.018));
+
+    const buf = this.ctx.createBuffer(1, len, sr);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 6);
+
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    const bp = this.ctx.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = high ? 2700 : 1850;   // 滴 / 答
+    bp.Q.value = 3.2;
+
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.16, t);
+    g.gain.exponentialRampToValueAtTime(0.0006, t + 0.05);
+    g.gain.linearRampToValueAtTime(0, t + 0.06);
+
+    src.connect(bp).connect(g).connect(this.master);
+    src.start(t);
+    setTimeout(() => { try { g.disconnect(); } catch (e) {} }, 400);
+  },
+
   stopAll() {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
@@ -1314,6 +1345,7 @@ function cleanConfig(raw) {
   if (raw.外觀 && typeof raw.外觀 === "object") {
     if (["auto", "paper", "chalk"].includes(raw.外觀.主題)) out.外觀.主題 = raw.外觀.主題;
     out.外觀.注音 = !!raw.外觀.注音;
+    out.外觀.滴答 = raw.外觀.滴答 !== false;   // 沒寫就是開著
     out.外觀.看板 = !!raw.外觀.看板;
   }
 
@@ -1462,6 +1494,7 @@ function renderNow(now) {
   $("nowChip").textContent = chip;
   setText($("nowPeriod"), period);
   setText($("nowSub"), sub);
+  return secs;
 }
 
 function renderTimeline(now) {
@@ -1538,10 +1571,20 @@ function renderTimeline(now) {
    7. 心跳
    ═══════════════════════════════════════════════════════════════ */
 
+let lastTockSec = -1;
+
 function tick() {
   const now = new Date();
-  renderNow(now);
+  const secsToBell = renderNow(now);
   renderTimeline(now);
+
+  // 最後一分鐘的滴答，和畫面上的紅色閃爍同步。一秒一下，高低交替。
+  if (cfg.外觀.滴答 && Audio_.armed && secsToBell !== null && secsToBell > 0 && secsToBell <= 60) {
+    const s = now.getSeconds();
+    if (s !== lastTockSec) { lastTockSec = s; Audio_.tock(secsToBell % 2 === 0); }
+  } else {
+    lastTockSec = -1;
+  }
 
   const today = dateKey(now);
   const nowMin = now.getHours() * 60 + now.getMinutes();
@@ -1622,6 +1665,7 @@ function applyAppearance() {
   document.documentElement.style.setProperty("--scale", cfg.外觀.看板 ? "1.5" : "1");
   $("bpmf").checked = cfg.外觀.注音;
   $("kiosk").checked = cfg.外觀.看板;
+  $("tock").checked = cfg.外觀.滴答;
   for (const b of $("skinSeg").children) {
     b.setAttribute("aria-pressed", String(b.dataset.skin === cfg.外觀.主題));
   }
@@ -2059,6 +2103,12 @@ $("bpmf").addEventListener("change", e => {
 $("kiosk").addEventListener("change", e => {
   cfg.外觀.看板 = e.target.checked;
   saveConfig(); applyAppearance();
+});
+
+$("tock").addEventListener("change", e => {
+  cfg.外觀.滴答 = e.target.checked;
+  saveConfig();
+  if (e.target.checked) Audio_.tock(true);   // 勾起來時試一聲
 });
 
 $("kioskExit").addEventListener("click", () => {
