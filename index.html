@@ -46,11 +46,14 @@
   --st-idle:   #7d8a7c;
   --st-soon:   #b5301f;
 
+  --st-timer:    #6b4fa0;   /* 臨時倒數：紫色，和上課／下課／午休都不撞 */
+
   --st-class-bg: #e4efe7;
   --st-break-bg: #f7ecd8;
   --st-lunch-bg: #e5ecf5;
   --st-idle-bg:  #e9ece8;
   --st-soon-bg:  #f8e3df;
+  --st-timer-bg: #ece6f5;
 
   --shadow: 0 1px 2px rgba(24,33,26,.06), 0 8px 24px rgba(24,33,26,.06);
 
@@ -71,8 +74,8 @@
     --bg:#131d17; --surface:#1a271f; --surface-2:#213026; --sunken:#0f1813;
     --ink:#edf2e8; --ink-2:#a2b2a4; --ink-3:#74836f;
     --line:#2c4133; --line-soft:#223229; --brand:#7fd4a3;
-    --st-class:#7fd4a3; --st-break:#e8b05c; --st-lunch:#8fb2dd; --st-idle:#869485; --st-soon:#f0796a;
-    --st-class-bg:#1d3527; --st-break-bg:#362b16; --st-lunch-bg:#1e2b3b; --st-idle-bg:#222c24; --st-soon-bg:#3a211d;
+    --st-class:#7fd4a3; --st-break:#e8b05c; --st-lunch:#8fb2dd; --st-idle:#869485; --st-soon:#f0796a; --st-timer:#b39ce0;
+    --st-class-bg:#1d3527; --st-break-bg:#362b16; --st-lunch-bg:#1e2b3b; --st-idle-bg:#222c24; --st-soon-bg:#3a211d; --st-timer-bg:#2c2340;
     --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.3);
   }
 }
@@ -80,8 +83,8 @@
   --bg:#131d17; --surface:#1a271f; --surface-2:#213026; --sunken:#0f1813;
   --ink:#edf2e8; --ink-2:#a2b2a4; --ink-3:#74836f;
   --line:#2c4133; --line-soft:#223229; --brand:#7fd4a3;
-  --st-class:#7fd4a3; --st-break:#e8b05c; --st-lunch:#8fb2dd; --st-idle:#869485; --st-soon:#f0796a;
-  --st-class-bg:#1d3527; --st-break-bg:#362b16; --st-lunch-bg:#1e2b3b; --st-idle-bg:#222c24; --st-soon-bg:#3a211d;
+  --st-class:#7fd4a3; --st-break:#e8b05c; --st-lunch:#8fb2dd; --st-idle:#869485; --st-soon:#f0796a; --st-timer:#b39ce0;
+  --st-class-bg:#1d3527; --st-break-bg:#362b16; --st-lunch-bg:#1e2b3b; --st-idle-bg:#222c24; --st-soon-bg:#3a211d; --st-timer-bg:#2c2340;
   --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.3);
 }
 
@@ -189,6 +192,19 @@ h1 { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: .06em; white-
 
 .now-label { font-size: calc(14px * var(--scale)); color: var(--ink-2); margin-top: 7px; text-wrap: balance; }
 .now-clock { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 13px; color: var(--ink-3); letter-spacing: .06em; margin-top: 12px; }
+
+/* ═══════════════════ 臨時倒數 ═══════════════════ */
+.quick { padding: 10px 14px; }
+.quick-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.quick-label {
+  font-size: 12px; letter-spacing: .09em; color: var(--ink-3);
+  margin-right: 2px; white-space: nowrap;
+}
+.btn-quick {
+  padding: 5px 11px; font-size: 13px; min-width: 44px;
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+}
+.quick-running .quick-label { color: var(--st-timer); font-weight: 500; }
 
 /* ═══════════════════ 時間軸 ═══════════════════ */
 .timeline { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 6px 0; box-shadow: var(--shadow); }
@@ -433,6 +449,18 @@ body.kiosk #kioskExit { display: inline-flex; }
       <div class="now-count num" id="nowCount">--:--</div>
       <div class="now-label" id="nowLabel">—</div>
       <div class="now-clock" id="nowClock">--:--:--</div>
+    </div>
+  </section>
+
+  <!-- 臨時倒數：和作息無關的一次性計時（「再十分鐘就收玩具」） -->
+  <section class="panel quick hide-kiosk" id="quickPanel">
+    <div class="quick-row" id="quickPresets">
+      <span class="quick-label">臨時倒數</span>
+    </div>
+    <div class="quick-row quick-running" id="quickRunning" hidden>
+      <span class="quick-label" id="quickState">倒數中</span>
+      <button class="btn btn-sm" id="quickPlus" type="button">＋1 分</button>
+      <button class="btn btn-sm btn-danger" id="quickStop" type="button">停止</button>
     </div>
   </section>
 
@@ -1539,7 +1567,7 @@ function setStateColor(el, kind) {
   const map = {
     class: ["--st-class", "--st-class-bg"], break: ["--st-break", "--st-break-bg"],
     lunch: ["--st-lunch", "--st-lunch-bg"], idle: ["--st-idle", "--st-idle-bg"],
-    soon:  ["--st-soon",  "--st-soon-bg"]
+    soon:  ["--st-soon",  "--st-soon-bg"],  timer: ["--st-timer", "--st-timer-bg"]
   };
   const [c, b] = map[kind] || map.idle;
   el.style.setProperty("--state", "var(" + c + ")");
@@ -1552,6 +1580,111 @@ const periodKind = name =>
   : /下課|放學|下班/.test(name) ? "break"
   : "class";
 
+/* ═══════════════════════════════════════════════════════════════
+   臨時倒數
+   ───────────────────────────────────────────────────────────────
+   和課表無關的一次性計時：「再十分鐘就收玩具」。
+
+   存的是「結束時刻」而不是「剩幾秒」—— 這樣重新整理、切到背景再回來、
+   甚至手機把頁面丟掉重載，倒數都還在正確的位置。存剩餘秒數的話，
+   頁面沒在跑的那段時間就白白凍住了。
+   ═══════════════════════════════════════════════════════════════ */
+
+const LS_TIMER = "kidz-schedule.timer";
+const QUICK_PRESETS = [1, 3, 5, 10, 15, 20, 30];
+
+let quickTimer = null;    // { endsAt: 毫秒, totalSec: 秒 }
+
+const fmtClock = s => {
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = s % 60;
+  return h > 0
+    ? h + ":" + String(m).padStart(2, "0") + ":" + String(x).padStart(2, "0")
+    : String(m).padStart(2, "0") + ":" + String(x).padStart(2, "0");
+};
+
+const fmtLen = sec => sec % 60 === 0 ? (sec / 60) + " 分鐘" : fmtClock(sec);
+
+function loadTimer() {
+  try {
+    const t = JSON.parse(localStorage.getItem(LS_TIMER) || "null");
+    if (t && typeof t.endsAt === "number" && typeof t.totalSec === "number" && t.endsAt > Date.now()) {
+      return { endsAt: t.endsAt, totalSec: t.totalSec };
+    }
+  } catch (e) {}
+  try { localStorage.removeItem(LS_TIMER); } catch (e) {}
+  return null;
+}
+
+function saveTimer() {
+  try {
+    if (quickTimer) localStorage.setItem(LS_TIMER, JSON.stringify(quickTimer));
+    else localStorage.removeItem(LS_TIMER);
+  } catch (e) {}
+}
+
+function startTimer(sec) {
+  if (!(sec > 0)) return;
+  quickTimer = { endsAt: Date.now() + sec * 1000, totalSec: sec };
+  saveTimer();
+  renderQuick();
+  tick();
+  toast("開始倒數 " + fmtLen(sec));
+}
+
+function stopTimer(msg) {
+  quickTimer = null;
+  saveTimer();
+  renderQuick();
+  tick();
+  if (msg) toast(msg);
+}
+
+function renderQuick() {
+  const running = !!quickTimer;
+  $("quickPresets").hidden = running;
+  $("quickRunning").hidden = !running;
+  if (running) $("quickState").textContent = "倒數 " + fmtLen(quickTimer.totalSec);
+}
+
+function buildQuickPresets() {
+  const box = $("quickPresets");
+  for (const m of QUICK_PRESETS) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn btn-sm btn-quick";
+    b.textContent = m;
+    b.setAttribute("aria-label", "倒數 " + m + " 分鐘");
+    b.addEventListener("click", () => startTimer(m * 60));
+    box.appendChild(b);
+  }
+  const unit = document.createElement("span");
+  unit.className = "quick-label";
+  unit.textContent = "分鐘";
+  box.appendChild(unit);
+
+  const custom = document.createElement("button");
+  custom.type = "button";
+  custom.className = "btn btn-sm";
+  custom.textContent = "自訂";
+  custom.addEventListener("click", () => {
+    const ans = prompt("倒數幾分鐘？（可以輸入小數，例如 2.5）", "10");
+    if (ans === null) return;
+    const m = parseFloat(String(ans).trim());
+    if (!isFinite(m) || m <= 0) { toast("請輸入大於 0 的數字"); return; }
+    startTimer(Math.round(Math.min(m, 12 * 60) * 60));
+  });
+  box.appendChild(custom);
+}
+
+$("quickStop").addEventListener("click", () => stopTimer("已停止倒數"));
+$("quickPlus").addEventListener("click", () => {
+  if (!quickTimer) return;
+  quickTimer.endsAt += 60000;
+  quickTimer.totalSec += 60;
+  saveTimer(); renderQuick(); tick();
+  toast("延長 1 分鐘");
+});
+
 function renderNow(now) {
   const p = prof();
   const cur = currentPeriod(p, now);
@@ -1561,6 +1694,24 @@ function renderNow(now) {
   $("nowClock").textContent = now.toLocaleTimeString("zh-TW", { hour12: false });
 
   const card = $("nowCard"), countEl = $("nowCount");
+
+  // 臨時倒數在跑的時候接管主顯示 —— 那一刻「還剩幾分鐘」比課表重要。
+  // 課表本身照常運作：時間軸照更新，排定的鈴照響。
+  if (quickTimer) {
+    const left = Math.max(0, Math.round((quickTimer.endsAt - now.getTime()) / 1000));
+    const near = left <= 60;
+    setStateColor(card, near ? "soon" : "timer");
+    countEl.textContent = fmtClock(left);
+    countEl.classList.toggle("soon", near);
+    $("nowChip").textContent = "倒數中";
+    setText($("nowPeriod"), fmtLen(quickTimer.totalSec));
+    setText($("nowSub"), cur ? (cur.subject || cur.name) : "");   // 保留課表的脈絡
+    $("nowLabel").textContent = nxt
+      ? "倒數結束後回到作息　·　下一個鈴 " + fmtHM(nxt.ev.min)
+      : "倒數結束後回到作息";
+    return left;
+  }
+
   const secs = nxt ? Math.max(0, Math.round((nxt.at - now) / 1000)) : null;
   const soon = secs !== null && secs <= 60;
 
@@ -1684,6 +1835,17 @@ let lastTockSec = -1;
 
 function tick() {
   const now = new Date();
+
+  // 臨時倒數到點：先處理，這樣同一幀畫面就回到作息模式
+  if (quickTimer && now.getTime() >= quickTimer.endsAt) {
+    const total = quickTimer.totalSec;
+    quickTimer = null;
+    saveTimer();
+    renderQuick();
+    if (Audio_.armed) Audio_.play(prof().bells.end);
+    toast("⏰ " + fmtLen(total) + "到了");
+  }
+
   const secsToBell = renderNow(now);
   renderTimeline(now);
 
@@ -2495,6 +2657,11 @@ const qs = new URLSearchParams(location.search);
 if (qs.get("kiosk") === "1") cfg.appearance.kiosk = true;
 if (["auto", "paper", "chalk"].includes(qs.get("skin"))) cfg.appearance.theme = qs.get("skin");
 if (qs.get("bpmf") === "1") cfg.appearance.bopomofo = true;
+
+// 臨時倒數：先把按鈕建好、把上次沒跑完的倒數接回來（存的是結束時刻）
+buildQuickPresets();
+quickTimer = loadTimer();
+renderQuick();
 
 refreshAll();
 
