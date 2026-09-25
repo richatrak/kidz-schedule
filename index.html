@@ -89,6 +89,11 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
+
+/* hidden 必須贏過任何 display 設定。瀏覽器預設的 [hidden]{display:none} 是
+   元素層級規則，會被 .quick-row{display:flex} 這種 class 選擇器蓋掉 ——
+   結果就是設了 hidden 卻還看得見。 */
+[hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
 
 body {
@@ -201,7 +206,7 @@ h1 { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: .06em; white-
   margin-right: 2px; white-space: nowrap;
 }
 .btn-quick {
-  padding: 5px 11px; font-size: 13px; min-width: 44px;
+  padding: 5px 10px; font-size: 13px; min-width: 38px;
   font-family: var(--mono); font-variant-numeric: tabular-nums;
 }
 .quick-running .quick-label { color: var(--st-timer); font-weight: 500; }
@@ -455,7 +460,7 @@ body.kiosk #kioskExit { display: inline-flex; }
   <!-- 臨時倒數：和作息無關的一次性計時（「再十分鐘就收玩具」） -->
   <section class="panel quick hide-kiosk" id="quickPanel">
     <div class="quick-row" id="quickPresets">
-      <span class="quick-label">臨時倒數</span>
+      <span class="quick-label">臨時倒數・分鐘</span>
     </div>
     <div class="quick-row quick-running" id="quickRunning" hidden>
       <span class="quick-label" id="quickState">倒數中</span>
@@ -1665,11 +1670,6 @@ function buildQuickPresets() {
     b.addEventListener("click", () => startTimer(m * 60));
     box.appendChild(b);
   }
-  const unit = document.createElement("span");
-  unit.className = "quick-label";
-  unit.textContent = "分鐘";
-  box.appendChild(unit);
-
   const custom = document.createElement("button");
   custom.type = "button";
   custom.className = "btn btn-sm";
