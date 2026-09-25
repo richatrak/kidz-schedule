@@ -178,6 +178,45 @@ h1 { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: .06em; white-
   border-radius: var(--r-lg); box-shadow: var(--shadow); overflow: hidden;
 }
 .now-stripe { height: 5px; background: var(--state); transition: background .4s ease; }
+
+/* ═══ 狀態標籤 + 快速開關（卡片最上面那一列）═══
+   三欄格線：彈性／標籤／彈性。兩側同寬，所以標籤永遠是真正置中，
+   不會被右邊那排開關推歪；minmax(0,…) 讓右欄可以被壓窄、開關自己換行。
+
+   這四個是「會反覆切」的開關，所以不收進 ☰ —— 而且看板模式下 ☰ 是隱藏的，
+   收進去等於按不到。它們只是去按 ☰ 裡那四個 checkbox，狀態沒有第二份。 */
+.now-head {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: start;
+  gap: 6px;
+}
+.now-head .now-chip { grid-column: 2; justify-self: center; }
+.now-toggles {
+  grid-column: 3; justify-self: end;
+  display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px;
+}
+.tgl {
+  display: inline-flex; align-items: center; gap: 4px;
+  /* 卡片最寬 640px，右欄只有約 254px —— 四顆要並排就得收到 60px 以內。
+     高度 40px 是觸控與版面高度的折衷（看板模式另外拉到 44）。 */
+  min-height: 40px; padding: 0 8px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface); color: var(--ink-3);
+  font-size: calc(12.5px * var(--scale)); line-height: 1; cursor: pointer;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+.tgl b { font-size: calc(14px * var(--scale)); font-weight: 700; }
+.tgl:hover { background: var(--sunken); }
+.tgl[aria-pressed="true"] { background: var(--state-bg); color: var(--state); border-color: currentColor; }
+body.kiosk .tgl { min-height: 44px; padding: 0 15px; gap: 7px; }
+
+/* 窄螢幕塞不下文字，留圖示就好。名稱在 aria-label 裡，讀螢幕的人不受影響。 */
+@media (max-width: 560px) {
+  .tgl span { display: none; }
+  .tgl { padding: 0 10px; }
+}
 .now-body { padding: 20px 20px 22px; display: flex; flex-direction: column; gap: 3px; align-items: center; text-align: center; }
 
 .now-chip {
@@ -221,6 +260,7 @@ h1 { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: .06em; white-
   position: relative;
   width: min(64vmin, 78vw, calc(400px * var(--scale)));
   aspect-ratio: 1;
+  container-type: size;          /* 裡面的字級用 cqw 跟著圓盤走，不是跟著視窗 */
   margin: 10px auto 4px;
 }
 .dial-svg { display: none; }
@@ -245,16 +285,19 @@ h1 { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: .06em; white-
    數字是給大人看的，也是給以後看得懂時刻的他。 */
 .dial[data-on="1"] .now-period {
   margin-top: 0;
-  font-size: clamp(18px, calc(7.4vmin * var(--scale)), calc(40px * var(--scale)));
+  font-size: clamp(18px, calc(7.4vmin * var(--scale)), calc(40px * var(--scale)));  /* 舊瀏覽器後援 */
+  font-size: clamp(18px, 10cqw, calc(40px * var(--scale)));
 }
 .dial[data-on="1"] .now-count {
   margin-top: 0; font-weight: 600;
-  font-size: clamp(15px, calc(3.6vmin * var(--scale)), calc(22px * var(--scale)));
+  font-size: clamp(15px, calc(3.6vmin * var(--scale)), calc(22px * var(--scale)));  /* 舊瀏覽器後援 */
+  font-size: clamp(15px, 5.6cqw, 26px);
 }
 /* 最後十秒：數字變回主角，這時候的訊息是「準備」不是「還早」 */
 .dial[data-on="1"] .now-count.final {
   font-weight: 700;
-  font-size: clamp(44px, calc(15vmin * var(--scale)), calc(86px * var(--scale)));
+  font-size: clamp(44px, calc(15vmin * var(--scale)), calc(86px * var(--scale)));  /* 舊瀏覽器後援 */
+  font-size: clamp(44px, 30cqw, 220px);
 }
 /* 時間軸上的注音要對齊格線（2.6em），圓心裡不用 —— 沒有東西要跟它對齊，
    而撐開的字距會讓三、四個字的科目塞不進內圈。 */
@@ -436,6 +479,7 @@ table.edit input[type="checkbox"] { accent-color: var(--brand); width: 16px; hei
 #scanVideo {
   width: min(100%, 320px);
   aspect-ratio: 1;
+  container-type: size;          /* 裡面的字級用 cqw 跟著圓盤走，不是跟著視窗 */
   object-fit: cover;
   background: var(--sunken);
   border: 1px solid var(--line);
@@ -532,6 +576,10 @@ body.kiosk {
   padding-right:  calc(14px + env(safe-area-inset-right, 0px));
 }
 body.kiosk .wrap { max-width: none; gap: 14px; }
+/* 看板是給整個房間看的，不是給桌前一個人看的：倒數要從對面牆看得見。
+   圓心留了一大片空白（盒子 309px 寬，數字才 87px），把它用掉。
+   這裡刻意不跟主畫面一致 —— 主畫面小孩靠形狀判斷，看板上大人要讀數字。 */
+body.kiosk .dial[data-on="1"] .now-count { font-size: clamp(22px, 13cqw, 84px); }
 body.kiosk .hide-kiosk { display: none; }
 body.kiosk .now, body.kiosk .timeline { border-radius: 20px; }
 body.kiosk #kioskExit { display: inline-flex; }
@@ -572,11 +620,24 @@ body.kiosk #kioskExit { display: inline-flex; }
       <button class="btn btn-sm" id="kioskExit" type="button">離開看板</button>
     </div>
   </header>
-
   <section class="now" id="nowCard" aria-live="polite">
     <div class="now-stripe"></div>
     <div class="now-body">
-      <span class="now-chip" id="nowChip">載入中</span>
+
+      <!-- 狀態標籤和快速開關同一列：三欄格線（彈性／標籤／彈性），標籤才會是
+           真正置中，不會被右邊的開關推歪。開關放正常排版而不是絕對定位 ——
+           絕對定位不佔空間，窄螢幕下會直接壓在標籤和圓盤上面。 -->
+      <div class="now-head">
+        <span class="now-chip" id="nowChip">載入中</span>
+        <!-- 會反覆切的四個開關。收進 ☰ 的話看板模式根本按不到（☰ 在看板模式是隱藏的）。
+             它們不自己存狀態，只是去按 ☰ 裡那四個 checkbox，所以兩邊永遠一致。 -->
+        <div class="now-toggles" id="nowToggles">
+          <button class="tgl" id="tglBpmf"  type="button" aria-pressed="false" aria-label="顯示注音"><b>ㄅ</b><span>注音</span></button>
+          <button class="tgl" id="tglTock"  type="button" aria-pressed="false" aria-label="倒數滴答聲"><b>♪</b><span>滴答</span></button>
+          <button class="tgl" id="tglWake"  type="button" aria-pressed="false" aria-label="保持螢幕開啟"><b>☀</b><span>螢幕</span></button>
+          <button class="tgl" id="tglKiosk" type="button" aria-pressed="false" aria-label="看板模式"><b>▣</b><span>看板</span></button>
+        </div>
+      </div>
 
       <!-- 剩餘時間圓盤。data-on="0" 時整個退回原本的直排文字，
            所以不需要另外準備一份 DOM。 -->
@@ -2198,24 +2259,31 @@ function ring(ev) {
 
 let wakeSentinel = null;
 
-async function updateWakeLock() {
+/** announce=true 時把結果也用 toast 說出來。看板模式下看不到 ☰ 裡的說明文字，
+    而「按了完全沒反應」是最難懂的失敗方式。啟動時呼叫不帶這個參數，免得一開頁就跳訊息。 */
+async function updateWakeLock(announce) {
+  const say = m => { if (announce) toast(m); };
   const want = $("wake").checked, note = $("wakeNote");
   if (!("wakeLock" in navigator)) {
     note.textContent = "這個瀏覽器不支援，請到「設定 → 螢幕顯示與亮度 → 自動鎖定」改成「永不」。";
+    say("這個瀏覽器不支援，請用系統的「自動鎖定 → 永不」");
     return;
   }
   if (!want) {
     if (wakeSentinel) { try { await wakeSentinel.release(); } catch (e) {} wakeSentinel = null; }
     note.textContent = "已關閉，螢幕會照系統設定鎖定。";
+    say("螢幕會照系統設定鎖定");
     return;
   }
-  if (wakeSentinel) return;
+  if (wakeSentinel) { say("螢幕不會自動關掉"); return; }
   try {
     wakeSentinel = await navigator.wakeLock.request("screen");
     wakeSentinel.addEventListener("release", () => { wakeSentinel = null; });
     note.textContent = "螢幕不會自動關掉。";
+    say("螢幕不會自動關掉");
   } catch (e) {
     note.textContent = "沒辦法鎖住螢幕，請改用系統的「自動鎖定 → 永不」。";
+    say("鎖不住螢幕，請改用系統的「自動鎖定 → 永不」");
   }
 }
 
@@ -2248,6 +2316,7 @@ function applyAppearance() {
   for (const b of $("skinSeg").children) {
     b.setAttribute("aria-pressed", String(b.dataset.skin === cfg.appearance.theme));
   }
+  syncToggles();          /* 從 ☰ 或匯入改的時候，右上角那排也要跟著動 */
 }
 
 /** 贊助連結：網址沒填就整個不顯示。只接受 https，避免貼錯變成可執行的連結。 */
@@ -2643,7 +2712,14 @@ $("kiosk").addEventListener("change", e => {
 $("tock").addEventListener("change", e => {
   cfg.appearance.tick = e.target.checked;
   saveConfig();
-  if (e.target.checked) Audio_.tock(true);   // 勾起來時試一聲
+  if (!e.target.checked) { toast("滴答聲關閉"); return; }
+  // 沒開鈴聲的話 Audio_.tock() 會直接靜默 return —— 按了完全沒反應最難懂，
+  // 所以在這裡講清楚，不要讓人以為壞掉。
+  if (!Audio_.armed) { toast("先按「開啟鈴聲」，滴答才會出聲"); return; }
+  // 試聽放兩下（滴—答），一下聽起來像雜音，兩下才聽得出是在數秒
+  Audio_.tock(true);
+  setTimeout(() => Audio_.tock(false), 260);
+  toast("最後一分鐘會像這樣一秒一下");
 });
 
 $("kioskExit").addEventListener("click", () => {
@@ -2678,7 +2754,33 @@ document.addEventListener("keydown", e => {
   if (e.key === "Escape" && !$("menuSheet").hidden) setMenu(false, true);
 });
 
-$("wake").addEventListener("change", updateWakeLock);
+$("wake").addEventListener("change", () => updateWakeLock(true));
+
+/* ── 卡片右上角的快速開關 ──────────────────────────────────────
+   刻意不自己存狀態：按下去只是去翻 ☰ 裡對應的那個 checkbox，再讓它自己
+   派發 change。所有邏輯（存檔、套用、試聽一聲、申請 wake lock）都還在原本
+   那一份 handler 裡，這排按鈕只是第二個入口。 */
+const QUICK_TOGGLES = [
+  { btn: "tglBpmf",  box: "bpmf"  },
+  { btn: "tglTock",  box: "tock"  },
+  { btn: "tglWake",  box: "wake"  },
+  { btn: "tglKiosk", box: "kiosk" }
+];
+
+function syncToggles() {
+  for (const t of QUICK_TOGGLES) {
+    $(t.btn).setAttribute("aria-pressed", String($(t.box).checked));
+  }
+}
+
+for (const t of QUICK_TOGGLES) {
+  $(t.btn).addEventListener("click", () => {
+    const box = $(t.box);
+    box.checked = !box.checked;
+    box.dispatchEvent(new Event("change", { bubbles: true }));
+    syncToggles();
+  });
+}
 
 /* ── 重新載入 ──────────────────────────────────────────────────
    iOS 主畫面的 App 沒有網址列，也就沒有重新整理按鈕。而這一頁會在
