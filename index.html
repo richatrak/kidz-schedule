@@ -1371,6 +1371,10 @@ function pluck(ctx, dest, freq, when, hold) {
   }
 }
 
+/* 滴答聲的兩層音量。調這兩個數字就能改大小 —— 目標 peak 約 -18 dBFS。 */
+const TOCK_NOISE = 0.25;   // 敲擊瞬態
+const TOCK_TONE  = 0.14;   // 木質共鳴
+
 const Audio_ = {
   ctx: null, master: null, active: [], armed: false,
 
@@ -1411,31 +1415,58 @@ const Audio_ = {
     }, Math.max(500, (endAt - this.ctx.currentTime) * 1000 + 400));
   },
 
-  /** 倒數最後一分鐘的滴答聲。高低兩種交替，聽起來才像時鐘而不是電子嗶聲。 */
+  /** 倒數最後一分鐘的滴答聲。高低兩種交替，聽起來才像時鐘而不是電子嗶聲。
+   *
+   *  原本只有 16ms 的窄帶雜訊（Q=3.2），量出來 peak −32 dBFS、有效長度 8ms，
+   *  比鐘聲整整低 24 dB。而且 100ms 以下的聲音人耳幾乎整合不到能量 ——
+   *  所以「聽不到」不只是音量問題，是太短又沒有音高。
+   *
+   *  現在拆成兩層，跟真的機械鐘一樣：
+   *    敲擊瞬態  短雜訊過帶通，Q 放寬到 1.4（原本 3.2 把大半能量濾掉了）
+   *    木質共鳴  三角波短衰減，給它一個音高，耳朵才抓得住
+   *  目標 peak 約 −18 dBFS：清楚聽得到，但仍明顯低於鐘聲的 −7 dBFS —— 
+   *  它是預告，不是鐘本身。 */
   tock(high) {
     if (!this.ctx || this.ctx.state !== "running") return;
-    const t = this.ctx.currentTime + 0.01;
-    const sr = this.ctx.sampleRate, len = Math.max(1, Math.floor(sr * 0.018));
+    const ctx = this.ctx, t = ctx.currentTime + 0.01;
+    const f = high ? 2300 : 1550;   // 滴 / 答
 
-    const buf = this.ctx.createBuffer(1, len, sr);
+    const bus = ctx.createGain();
+    bus.gain.value = 1;
+    bus.connect(this.master);
+
+    // ── 敲擊瞬態 ──
+    const sr = ctx.sampleRate, len = Math.max(1, Math.floor(sr * 0.016));
+    const buf = ctx.createBuffer(1, len, sr);
     const d = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 6);
-
-    const src = this.ctx.createBufferSource();
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 5);
+    const src = ctx.createBufferSource();
     src.buffer = buf;
-    const bp = this.ctx.createBiquadFilter();
+    const bp = ctx.createBiquadFilter();
     bp.type = "bandpass";
-    bp.frequency.value = high ? 2700 : 1850;   // 滴 / 答
-    bp.Q.value = 3.2;
-
-    const g = this.ctx.createGain();
-    g.gain.setValueAtTime(0.16, t);
-    g.gain.exponentialRampToValueAtTime(0.0006, t + 0.05);
-    g.gain.linearRampToValueAtTime(0, t + 0.06);
-
-    src.connect(bp).connect(g).connect(this.master);
+    bp.frequency.value = f;
+    bp.Q.value = 1.4;
+    const gn = ctx.createGain();
+    gn.gain.setValueAtTime(TOCK_NOISE, t);
+    gn.gain.exponentialRampToValueAtTime(0.0008, t + 0.05);
+    src.connect(bp).connect(gn).connect(bus);
     src.start(t);
-    setTimeout(() => { try { g.disconnect(); } catch (e) {} }, 400);
+
+    // ── 木質共鳴 ──
+    const osc = ctx.createOscillator();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(f, t);
+    osc.frequency.exponentialRampToValueAtTime(f * 0.86, t + 0.06);   // 微微下滑＝敲到東西的感覺
+    const go = ctx.createGain();
+    go.gain.setValueAtTime(0.0001, t);
+    go.gain.exponentialRampToValueAtTime(TOCK_TONE, t + 0.004);
+    go.gain.exponentialRampToValueAtTime(0.0008, t + 0.075);
+    go.gain.linearRampToValueAtTime(0, t + 0.085);
+    osc.connect(go).connect(bus);
+    osc.start(t);
+    osc.stop(t + 0.1);
+
+    setTimeout(() => { try { bus.disconnect(); } catch (e) {} }, 400);
   },
 
   stopAll() {
@@ -2699,10 +2730,11 @@ $("tock").addEventListener("change", e => {
   if (!e.target.checked) { toast("滴答聲關閉"); return; }
   // 沒開鈴聲的話 Audio_.tock() 會直接靜默 return —— 按了完全沒反應最難懂，
   // 所以在這裡講清楚，不要讓人以為壞掉。
-  if (!Audio_.armed) { toast("先按「開啟鈴聲」，滴答才會出聲"); return; }
-  // 試聽放兩下（滴—答），一下聽起來像雜音，兩下才聽得出是在數秒
+  if (!Audio_.armed) { toast("先開右上角的 ♫ 鈴聲，滴答才會出聲"); return; }
+  // 試聽放兩下（滴—答）。間隔拉到 500ms 才像時鐘 —— 原本 260ms 太快，
+  // 聽起來像連擊，跟真正一秒一下的節奏對不起來。
   Audio_.tock(true);
-  setTimeout(() => Audio_.tock(false), 260);
+  setTimeout(() => Audio_.tock(false), 500);
   toast("最後一分鐘會像這樣一秒一下");
 });
 
