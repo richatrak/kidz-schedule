@@ -180,26 +180,23 @@ h1 { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: .06em; white-
 .now-stripe { height: 5px; background: var(--state); transition: background .4s ease; }
 
 /* ═══ 狀態標籤 + 快速開關（卡片最上面那一列）═══
-   三欄格線：彈性／標籤／彈性。兩側同寬，所以標籤永遠是真正置中，
-   不會被右邊那排開關推歪；minmax(0,…) 讓右欄可以被壓窄、開關自己換行。
+   標籤靠左、開關靠右的單列。原本讓標籤置中要兩側等寬，加到五顆按鈕後
+   需要 712px 才排得下，但卡片最寬只有 598px —— 置中就一定會換行。
 
-   這四個是「會反覆切」的開關，所以不收進 ☰ —— 而且看板模式下 ☰ 是隱藏的，
-   收進去等於按不到。它們只是去按 ☰ 裡那四個 checkbox，狀態沒有第二份。 */
+   這五個是「會反覆切」的開關，所以不收進 ☰ —— 而且看板模式下 ☰ 是隱藏的，
+   收進去等於按不到。它們只是去按 ☰ 裡對應的那個控制項，狀態沒有第二份。 */
 .now-head {
   width: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: start;
-  gap: 6px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px;
 }
-.now-head .now-chip { grid-column: 2; justify-self: center; }
 .now-toggles {
-  grid-column: 3; justify-self: end;
   display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px;
+  margin-left: auto;
 }
 .tgl {
   display: inline-flex; align-items: center; gap: 4px;
-  /* 卡片最寬 640px，右欄只有約 254px —— 四顆要並排就得收到 60px 以內。
+  /* 卡片最寬 640px，五顆並排要收到 60px 以內才排得下一列。
      高度 40px 是觸控與版面高度的折衷（看板模式另外拉到 44）。 */
   min-height: 40px; padding: 0 8px;
   border: 1px solid var(--line); border-radius: 999px;
@@ -632,8 +629,9 @@ body.kiosk #kioskExit { display: inline-flex; }
         <!-- 會反覆切的四個開關。收進 ☰ 的話看板模式根本按不到（☰ 在看板模式是隱藏的）。
              它們不自己存狀態，只是去按 ☰ 裡那四個 checkbox，所以兩邊永遠一致。 -->
         <div class="now-toggles" id="nowToggles">
+          <button class="tgl" id="tglBell"  type="button" aria-pressed="false" aria-label="鈴聲開關"><b>♫</b><span>鈴聲</span></button>
           <button class="tgl" id="tglBpmf"  type="button" aria-pressed="false" aria-label="顯示注音"><b>ㄅ</b><span>注音</span></button>
-          <button class="tgl" id="tglTock"  type="button" aria-pressed="false" aria-label="倒數滴答聲"><b>♪</b><span>滴答</span></button>
+          <button class="tgl" id="tglTock"  type="button" aria-pressed="false" aria-label="倒數滴答聲"><b>秒</b><span>滴答</span></button>
           <button class="tgl" id="tglWake"  type="button" aria-pressed="false" aria-label="保持螢幕開啟"><b>☀</b><span>螢幕</span></button>
           <button class="tgl" id="tglKiosk" type="button" aria-pressed="false" aria-label="看板模式"><b>▣</b><span>看板</span></button>
         </div>
@@ -663,14 +661,13 @@ body.kiosk #kioskExit { display: inline-flex; }
       <div class="now-clock" id="nowClock">--:--:--</div>
     </div>
   </section>
-
-  <!-- 鈴聲開關。必須放在時間軸上面 —— 這是唯一非按不可的按鈕，
-       瀏覽器沒有這一下手勢就不會發出任何聲音，不能讓它躲在捲動之後。 -->
-  <section class="panel hide-kiosk">
+  <!-- 第一次的大按鈕。瀏覽器沒有這一下手勢就不會發出任何聲音，所以它必須在
+       時間軸上面、而且要大。開啟之後由 syncToggles() 整個收起來 —— 右上角
+       那顆「♫ 鈴聲」已經在講同一件事，留著只是重複。 -->
+  <section class="panel hide-kiosk" id="armPanel">
     <div class="panel-pad">
       <div class="arm">
         <button class="btn btn-primary" id="armBtn" type="button">開啟鈴聲</button>
-        <button class="btn" id="stopBtn" type="button">停止聲音</button>
         <p class="arm-note" id="armNote">瀏覽器規定要先按一下才能發出聲音。按下後這一頁會照作息自動打鐘。</p>
       </div>
     </div>
@@ -711,6 +708,13 @@ body.kiosk #kioskExit { display: inline-flex; }
         <label for="selBellEnd">下課鐘</label>
         <select id="selBellEnd"></select>
         <button class="btn btn-sm" type="button" data-try="end">試聽</button>
+      </div>
+
+      <!-- 「停止聲音」從主畫面搬進來。鐘只響幾秒，真正會想按它的時機是在這裡
+           試聽的時候 —— 放在試聽旁邊比放在外面合理。 -->
+      <div class="field">
+        <button class="btn btn-sm" id="stopBtn" type="button">停止聲音</button>
+        <span class="hint" style="flex:1 1 170px">試聽到一半想停就按這裡。</span>
       </div>
 
       <div class="field">
@@ -2658,6 +2662,8 @@ $("armBtn").addEventListener("click", async () => {
     $("armBtn").classList.remove("btn-on");
     $("armNote").textContent = "鈴聲已關閉，時間還是會繼續走。";
     $("armNote").classList.add("warn");
+    syncToggles();
+    toast("鈴聲關閉，時間還是照走");
     return;
   }
   if (!await Audio_.arm()) { toast("這個瀏覽器擋住了聲音，再按一次試試"); return; }
@@ -2667,6 +2673,8 @@ $("armBtn").addEventListener("click", async () => {
   $("armNote").textContent = "會照下面的作息自動打鐘。讓這一頁開著、螢幕亮著就好。";
   $("armNote").classList.remove("warn");
   updateWakeLock();
+  syncToggles();
+  toast("鈴聲開啟，時間到會自動打鐘");
 });
 
 $("stopBtn").addEventListener("click", () => { Audio_.stopAll(); toast("已停止"); });
@@ -2767,11 +2775,20 @@ const QUICK_TOGGLES = [
   { btn: "tglKiosk", box: "kiosk" }
 ];
 
+/* 鈴聲那顆不一樣：它的狀態不在 checkbox 裡，而是 Audio_.armed
+   （瀏覽器准不准這一頁出聲，不是一個我們說了算的設定）。 */
 function syncToggles() {
   for (const t of QUICK_TOGGLES) {
     $(t.btn).setAttribute("aria-pressed", String($(t.box).checked));
   }
+  $("tglBell").setAttribute("aria-pressed", String(!!Audio_.armed));
+  // 大按鈕只在「還沒開」的時候出現 —— 那是唯一非按不可的一下，第一次來的人
+  // 需要那段說明。開了之後它就只是重複資訊，交給右上角那顆小的。
+  $("armPanel").hidden = !!Audio_.armed;
 }
+
+/* 按小的等於按大的 —— arm/disarm 的邏輯（含瀏覽器擋住時的提示）只有一份 */
+$("tglBell").addEventListener("click", () => $("armBtn").click());
 
 for (const t of QUICK_TOGGLES) {
   $(t.btn).addEventListener("click", () => {
@@ -3161,6 +3178,7 @@ if (qs.get("kiosk") === "1") {
     Audio_.setVolume(prof().bells.volume);
     $("armBtn").textContent = "鈴聲已開啟";
     $("armBtn").classList.add("btn-on");
+    syncToggles();
   });
 }
 </script>
