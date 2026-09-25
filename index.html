@@ -163,9 +163,16 @@ rt {
 
 /* ═══════════════════ 頁首 ═══════════════════ */
 header { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-.brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
 h1 { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: .06em; white-space: nowrap; }
 .today { font-size: 12.5px; color: var(--ink-2); letter-spacing: .03em; }
+/* 和 ☰ 同樣的 44px 觸控目標；字大一點，因為 ↻ 本身比 ☰ 細 */
+.reload-btn {
+  font-size: 19px; line-height: 1; padding: 0;
+  min-width: 44px; min-height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--ink-3);
+}
 
 #profPick {
   background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
@@ -366,7 +373,6 @@ body.kiosk .tgl { min-height: 44px; padding: 0 15px; gap: 7px; }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); }
 .panel-pad { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
 
-.arm { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
 .btn {
   border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
@@ -386,8 +392,6 @@ body.kiosk .tgl { min-height: 44px; padding: 0 15px; gap: 7px; }
 .btn-on:hover { background: var(--st-class-bg); }
 .btn-danger:hover { border-color: var(--st-soon); color: var(--st-soon); background: var(--st-soon-bg); }
 
-.arm-note { font-size: 12.5px; color: var(--ink-3); flex: 1 1 100%; margin: 0; }
-.arm-note.warn { color: var(--st-soon); }
 
 .field { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .field > label:first-child { font-size: 12px; letter-spacing: .09em; color: var(--ink-3); min-width: 62px; }
@@ -609,6 +613,9 @@ body.kiosk #kioskExit { display: inline-flex; }
     <div class="brand">
       <h1>作息鐘</h1>
       <span class="today num" id="today">—</span>
+      <!-- 重新載入。iOS 主畫面的 App 沒有網址列，看板模式連 ☰ 都沒有 ——
+           這是那兩種情況下唯一能更新到新版的按鈕，所以擺在最顯眼的左上角。 -->
+      <button class="btn btn-sm reload-btn" id="reloadBtn" type="button" aria-label="重新載入">↻</button>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <select id="profPick" aria-label="選擇課表"></select>
@@ -658,17 +665,6 @@ body.kiosk #kioskExit { display: inline-flex; }
       <div class="now-sub" id="nowSub"></div>
       <div class="now-label" id="nowLabel">—</div>
       <div class="now-clock" id="nowClock">--:--:--</div>
-    </div>
-  </section>
-  <!-- 第一次的大按鈕。瀏覽器沒有這一下手勢就不會發出任何聲音，所以它必須在
-       時間軸上面、而且要大。開啟之後由 syncToggles() 整個收起來 —— 右上角
-       那顆「♫ 鈴聲」已經在講同一件事，留著只是重複。 -->
-  <section class="panel hide-kiosk" id="armPanel">
-    <div class="panel-pad">
-      <div class="arm">
-        <button class="btn btn-primary" id="armBtn" type="button">開啟鈴聲</button>
-        <p class="arm-note" id="armNote">瀏覽器規定要先按一下才能發出聲音。按下後這一頁會照作息自動打鐘。</p>
-      </div>
     </div>
   </section>
 
@@ -733,34 +729,20 @@ body.kiosk #kioskExit { display: inline-flex; }
         </div>
       </div>
 
+      <!-- 只剩滴答。注音／看板／螢幕都已經是卡片右上角那排按鈕了，
+           同一個狀態開兩個入口，遲早會有一邊忘了同步。 -->
       <div class="field">
-        <label class="switch" for="bpmf">
-          <input type="checkbox" id="bpmf">
-          <span>顯示注音</span>
-        </label>
-        <label class="switch" for="kiosk">
-          <input type="checkbox" id="kiosk">
-          <span>看板模式</span>
-        </label>
         <label class="switch" for="tock">
           <input type="checkbox" id="tock" checked>
           <span>倒數滴答聲（鈴聲開著才有）</span>
         </label>
       </div>
 
-      <div class="field">
-        <label class="switch" for="wake">
-          <input type="checkbox" id="wake" checked>
-          <span>保持螢幕開啟</span>
-        </label>
-        <span class="hint" id="wakeNote" style="flex:1 1 170px"></span>
-      </div>
-
       <hr class="rule">
 
+      <!-- 「重新載入」搬到左上角了；這裡只留「幾點載入、開了多久」。 -->
       <div class="field">
         <label>這一頁</label>
-        <button class="btn btn-sm" id="reloadBtn" type="button">重新載入</button>
         <span class="hint" id="loadedAt" style="flex:1 1 180px"></span>
       </div>
     </div>
@@ -2262,19 +2244,22 @@ function ring(ev) {
 
 let wakeSentinel = null;
 
-/** announce=true 時把結果也用 toast 說出來。看板模式下看不到 ☰ 裡的說明文字，
-    而「按了完全沒反應」是最難懂的失敗方式。啟動時呼叫不帶這個參數，免得一開頁就跳訊息。 */
+/* 這個狀態沒有 checkbox 可以存 —— 螢幕開關已經是卡片右上角的 ☀，
+   而那顆是 aria-pressed，不是表單控制項。所以狀態放這裡。
+   預設開著：這一頁的用途就是擺著讓它走，螢幕鎖掉就沒意義了。 */
+let wakeWanted = true;
+
+/** announce=true 時把結果用 toast 說出來。原本寫在 ☰ 裡的說明文字已經拿掉了
+    （看板模式下本來就看不到），「按了完全沒反應」是最難懂的失敗方式，所以改用 toast。
+    啟動時呼叫不帶這個參數，免得一開頁就跳訊息。 */
 async function updateWakeLock(announce) {
   const say = m => { if (announce) toast(m); };
-  const want = $("wake").checked, note = $("wakeNote");
   if (!("wakeLock" in navigator)) {
-    note.textContent = "這個瀏覽器不支援，請到「設定 → 螢幕顯示與亮度 → 自動鎖定」改成「永不」。";
     say("這個瀏覽器不支援，請用系統的「自動鎖定 → 永不」");
     return;
   }
-  if (!want) {
+  if (!wakeWanted) {
     if (wakeSentinel) { try { await wakeSentinel.release(); } catch (e) {} wakeSentinel = null; }
-    note.textContent = "已關閉，螢幕會照系統設定鎖定。";
     say("螢幕會照系統設定鎖定");
     return;
   }
@@ -2282,10 +2267,8 @@ async function updateWakeLock(announce) {
   try {
     wakeSentinel = await navigator.wakeLock.request("screen");
     wakeSentinel.addEventListener("release", () => { wakeSentinel = null; });
-    note.textContent = "螢幕不會自動關掉。";
     say("螢幕不會自動關掉");
   } catch (e) {
-    note.textContent = "沒辦法鎖住螢幕，請改用系統的「自動鎖定 → 永不」。";
     say("鎖不住螢幕，請改用系統的「自動鎖定 → 永不」");
   }
 }
@@ -2313,8 +2296,6 @@ function applyAppearance() {
   document.body.classList.toggle("kiosk", cfg.appearance.kiosk);
   if (cfg.appearance.kiosk) setMenu(false);   // 抽屜是覆蓋層，看板模式下一定要關掉
   document.documentElement.style.setProperty("--scale", cfg.appearance.kiosk ? "1.5" : "1");
-  $("bpmf").checked = cfg.appearance.bopomofo;
-  $("kiosk").checked = cfg.appearance.kiosk;
   $("tock").checked = cfg.appearance.tick;
   for (const b of $("skinSeg").children) {
     b.setAttribute("aria-pressed", String(b.dataset.skin === cfg.appearance.theme));
@@ -2653,28 +2634,26 @@ $("profPick").addEventListener("change", e => {
 
 /* ── 鈴聲 / 外觀控制 ── */
 
-$("armBtn").addEventListener("click", async () => {
+/* 開關鈴聲。入口只有右上角那顆 ♫ —— 原本時間軸上面還有一顆大的「開啟鈴聲」，
+   但它講的是同一件事，留著就是第二個要同步的地方。
+
+   瀏覽器規定要有使用者手勢才准出聲；按 ♫ 本身就是那個手勢，所以沒有問題。
+   代價是那段「為什麼要先按一下」的說明沒地方放了 —— 改成第一次載入時用 toast
+   講一次（見最下面的啟動提示）。 */
+async function toggleBell() {
   if (Audio_.armed) {
     Audio_.stopAll();
     Audio_.armed = false;
-    $("armBtn").textContent = "開啟鈴聲";
-    $("armBtn").classList.remove("btn-on");
-    $("armNote").textContent = "鈴聲已關閉，時間還是會繼續走。";
-    $("armNote").classList.add("warn");
     syncToggles();
     toast("鈴聲關閉，時間還是照走");
     return;
   }
   if (!await Audio_.arm()) { toast("這個瀏覽器擋住了聲音，再按一次試試"); return; }
   Audio_.setVolume(prof().bells.volume);
-  $("armBtn").textContent = "鈴聲已開啟";
-  $("armBtn").classList.add("btn-on");
-  $("armNote").textContent = "會照下面的作息自動打鐘。讓這一頁開著、螢幕亮著就好。";
-  $("armNote").classList.remove("warn");
   updateWakeLock();
   syncToggles();
   toast("鈴聲開啟，時間到會自動打鐘");
-});
+}
 
 $("stopBtn").addEventListener("click", () => { Audio_.stopAll(); toast("已停止"); });
 
@@ -2703,16 +2682,6 @@ $("skinSeg").addEventListener("click", e => {
   const b = e.target.closest("button[data-skin]");
   if (!b) return;
   cfg.appearance.theme = b.dataset.skin;
-  saveConfig(); applyAppearance();
-});
-
-$("bpmf").addEventListener("change", e => {
-  cfg.appearance.bopomofo = e.target.checked;
-  saveConfig(); applyAppearance(); tick();
-});
-
-$("kiosk").addEventListener("change", e => {
-  cfg.appearance.kiosk = e.target.checked;
   saveConfig(); applyAppearance();
 });
 
@@ -2761,45 +2730,52 @@ document.addEventListener("keydown", e => {
   if (e.key === "Escape" && !$("menuSheet").hidden) setMenu(false, true);
 });
 
-$("wake").addEventListener("change", () => updateWakeLock(true));
-
 /* ── 卡片右上角的快速開關 ──────────────────────────────────────
-   刻意不自己存狀態：按下去只是去翻 ☰ 裡對應的那個 checkbox，再讓它自己
-   派發 change。所有邏輯（存檔、套用、試聽一聲、申請 wake lock）都還在原本
-   那一份 handler 裡，這排按鈕只是第二個入口。 */
+   這裡是這幾個狀態唯一的入口。原本 ☰ 裡還有一組 checkbox，按鈕只是去翻它們；
+   但同一個狀態開兩個入口，遲早會有一邊忘了同步，所以那組已經拿掉了。
+
+   三種狀態存在三個不同的地方，因為它們本來就是三種東西：
+     注音／看板 → cfg.appearance（要存檔、要跟著課表匯出）
+     螢幕       → wakeWanted（只對這台裝置這一次有意義，不進設定檔）
+     鈴聲       → Audio_.armed（瀏覽器准不准出聲，不是我們說了算） */
 const QUICK_TOGGLES = [
-  { btn: "tglBpmf",  box: "bpmf"  },
-  { btn: "tglWake",  box: "wake"  },
-  { btn: "tglKiosk", box: "kiosk" }
+  {
+    btn: "tglBpmf",
+    get: () => cfg.appearance.bopomofo,
+    set: v => { cfg.appearance.bopomofo = v; saveConfig(); applyAppearance(); tick(); }
+  },
+  {
+    btn: "tglWake",
+    get: () => wakeWanted,
+    set: v => { wakeWanted = v; updateWakeLock(true); }
+  },
+  {
+    btn: "tglKiosk",
+    get: () => cfg.appearance.kiosk,
+    set: v => { cfg.appearance.kiosk = v; saveConfig(); applyAppearance(); }
+  }
 ];
 
-/* 鈴聲那顆不一樣：它的狀態不在 checkbox 裡，而是 Audio_.armed
-   （瀏覽器准不准這一頁出聲，不是一個我們說了算的設定）。 */
 function syncToggles() {
   for (const t of QUICK_TOGGLES) {
-    $(t.btn).setAttribute("aria-pressed", String($(t.box).checked));
+    $(t.btn).setAttribute("aria-pressed", String(!!t.get()));
   }
   $("tglBell").setAttribute("aria-pressed", String(!!Audio_.armed));
-  // 大按鈕只在「還沒開」的時候出現 —— 那是唯一非按不可的一下，第一次來的人
-  // 需要那段說明。開了之後它就只是重複資訊，交給右上角那顆小的。
-  $("armPanel").hidden = !!Audio_.armed;
 }
 
 /* 按小的等於按大的 —— arm/disarm 的邏輯（含瀏覽器擋住時的提示）只有一份 */
-$("tglBell").addEventListener("click", () => $("armBtn").click());
+$("tglBell").addEventListener("click", toggleBell);
 
 for (const t of QUICK_TOGGLES) {
   $(t.btn).addEventListener("click", () => {
-    const box = $(t.box);
-    box.checked = !box.checked;
-    box.dispatchEvent(new Event("change", { bubbles: true }));
-    syncToggles();
+    t.set(!t.get());
+    syncToggles();     // set() 裡若已經呼叫 applyAppearance 會重複一次，無妨且便宜
   });
 }
 
 /* ── 重新載入 ──────────────────────────────────────────────────
-   iOS 主畫面的 App 沒有網址列，也就沒有重新整理按鈕。而這一頁會在
-   平板上連開好幾天 —— 推了新版它自己不會知道。所以得自己長一顆。
+   iOS 主畫面的 App 沒有網址列，看板模式連 ☰ 都沒有。而這一頁會在
+   平板上連開好幾天 —— 推了新版它自己不會知道。所以左上角自己長一顆 ↻。
 
    帶時間戳是為了繞過快取：普通的 reload 可能還是拿到同一份舊的。
    載入後那個參數會被清掉，免得跟著跑進分享連結裡。 */
@@ -3174,11 +3150,16 @@ if (qs.get("kiosk") === "1") {
   Audio_.arm().then(ok => {
     if (!ok) return;
     Audio_.setVolume(prof().bells.volume);
-    $("armBtn").textContent = "鈴聲已開啟";
-    $("armBtn").classList.add("btn-on");
     syncToggles();
   });
 }
+
+/* 「開啟鈴聲」那顆大按鈕拿掉之後，「為什麼一定要先按一下」就沒地方講了。
+   第一次載入時若還沒開，提示一次 —— 只講一次，而且只在真的沒開的時候。
+   等一下再講，是為了不要和頁面剛畫好的那一瞬間擠在一起。 */
+setTimeout(() => {
+  if (!Audio_.armed) toast("鈴聲還沒開 —— 按右上角的 ♫（瀏覽器規定要先按一下才准出聲）");
+}, 1500);
 </script>
 </body>
 </html>
