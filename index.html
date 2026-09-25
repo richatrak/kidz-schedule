@@ -98,14 +98,24 @@ html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
-  padding-block: 20px 48px;
-  padding-inline: 16px;
+  /* 加上 safe area —— 主畫面 App 是整片全螢幕，狀態列（時間、電量）直接蓋在上面 */
+  padding-top:    calc(20px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px));
+  padding-left:   calc(16px + env(safe-area-inset-left, 0px));
+  padding-right:  calc(16px + env(safe-area-inset-right, 0px));
   background: var(--bg);
   color: var(--ink);
   font-family: var(--sans);
   font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+}
+
+/* iPad 沒有瀏海，某些 iPadOS 版本在主畫面 App 下 safe-area-inset-top 會回報 0，
+   但半透明狀態列還是蓋在最上面。所以獨立 App 模式下再給一個下限。 */
+@media (display-mode: standalone) {
+  body { padding-top: calc(20px + max(env(safe-area-inset-top, 0px), 24px)); }
+  body .sheet-head { padding-top: calc(14px + max(env(safe-area-inset-top, 0px), 24px)); }
 }
 
 .wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
@@ -197,6 +207,69 @@ h1 { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: .06em; white-
 
 .now-label { font-size: calc(14px * var(--scale)); color: var(--ink-2); margin-top: 7px; text-wrap: balance; }
 .now-clock { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 13px; color: var(--ink-3); letter-spacing: .06em; margin-top: 12px; }
+
+/* ═══════════════════ 剩餘時間圓盤 ═══════════════════
+   一年級讀不出「還有 12 分鐘」—— 時刻到二年級才教。但「快沒了」看得懂：
+   扇形一直變小，不用讀字、不用數數，只要比大小，那是上小學前就有的能力。
+
+   滿格＝這一段自己的長度，不是固定的一小時。40 分鐘的課和 3 分鐘的臨時
+   倒數都從滿到空，短倒數才看得見在動（固定一小時刻度的話，3 分鐘只是一
+   條細縫）。代價很誠實：兩者在剛開始時長得一樣 —— 絕對長度交給圓周上的
+   刻度，每 5 分鐘一格。 */
+.dial { display: grid; place-items: center; }
+.dial[data-on="1"] {
+  position: relative;
+  width: min(64vmin, 78vw, calc(400px * var(--scale)));
+  aspect-ratio: 1;
+  margin: 10px auto 4px;
+}
+.dial-svg { display: none; }
+.dial[data-on="1"] .dial-svg { display: block; width: 100%; height: 100%; }
+
+.dial-track { fill: var(--sunken); }
+.dial-wedge { fill: var(--state); }
+.dial-hub   { fill: var(--surface); }
+/* 刻度用背景色刻上去，扇形有色與無色的兩邊都看得見 */
+.dial-ticks line { stroke: var(--bg); stroke-width: 1.6; stroke-linecap: round; opacity: .8; }
+
+.dial[data-on="1"] .dial-face {
+  /* 圓內接矩形不必是正方形，文字是寬扁的。內圈半徑 34%，給寬 52% x 高 42%：
+     角落到圓心 = hypot(26%, 21%) = 33.4% < 34%，四角仍在圈內。
+     高度要夠，是因為注音的標音列本身就佔掉一行 —— 正方形的盒子會把
+     兩個字的科目壓到 26px。 */
+  position: absolute; inset: 29% 24%;
+  display: grid; place-content: center; gap: 4px;
+  pointer-events: none;
+}
+/* 圓盤裡面：科目最大、數字退成小字。小孩認得的是形狀和科目名，
+   數字是給大人看的，也是給以後看得懂時刻的他。 */
+.dial[data-on="1"] .now-period {
+  margin-top: 0;
+  font-size: clamp(18px, calc(7.4vmin * var(--scale)), calc(40px * var(--scale)));
+}
+.dial[data-on="1"] .now-count {
+  margin-top: 0; font-weight: 600;
+  font-size: clamp(15px, calc(3.6vmin * var(--scale)), calc(22px * var(--scale)));
+}
+/* 最後十秒：數字變回主角，這時候的訊息是「準備」不是「還早」 */
+.dial[data-on="1"] .now-count.final {
+  font-weight: 700;
+  font-size: clamp(44px, calc(15vmin * var(--scale)), calc(86px * var(--scale)));
+}
+/* 時間軸上的注音要對齊格線（2.6em），圓心裡不用 —— 沒有東西要跟它對齊，
+   而撐開的字距會讓三、四個字的科目塞不進內圈。 */
+.bpmf-on .dial[data-on="1"] .now-period ruby,
+.bpmf-on .dial[data-on="1"] .now-period .bpmf-pad { min-width: 1.9em; }
+
+/* 有圓盤的時候不閃 —— 扇形最後一分鐘掃得最快，本來就夠明顯，
+   再加每秒閃爍只是製造焦慮。沒有圓盤時（長區段）才保留閃爍。 */
+.dial[data-on="1"] .now-count.soon { animation: none; }
+
+/* 最後十分鐘的點。數量少到可以一眼看出，而「剩十分鐘」正好是大人
+   嘴上會講的那句話。 */
+.dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; margin: 8px 0 2px; }
+.dots i { width: calc(15px * var(--scale)); aspect-ratio: 1; border-radius: 50%; background: var(--state); }
+.dots i.off { background: var(--sunken); }
 
 /* ═══════════════════ 臨時倒數 ═══════════════════ */
 .quick { padding: 10px 14px; }
@@ -379,8 +452,55 @@ table.edit input[type="checkbox"] { accent-color: var(--brand); width: 16px; hei
 }
 .qr svg { display: block; width: 260px; max-width: 100%; height: auto; }
 
+/* ═══════════════════ 設定抽屜 ═══════════════════
+   編輯課表、鈴聲、外觀這些東西平常收起來 —— 小孩每天看的是時鐘，
+   不是設定。做成整頁覆蓋而不是側邊滑出，因為主要裝置是手機和平板，
+   整頁不用煩惱寬度。 */
+/* 44px 是手指的最小可靠目標；這顆是小孩和大人唯一的入口，不能瘦。 */
+.menu-btn {
+  font-size: 18px; line-height: 1; padding: 0;
+  min-width: 44px; min-height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  overscroll-behavior: contain;
+}
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) 14px calc(16px + env(safe-area-inset-left, 0px));
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 15px;
+  letter-spacing: .04em;
+  flex: 0 0 auto;
+}
+.sheet-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px calc(16px + env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+}
+.sheet-body > footer { margin-top: 4px; }
+body.sheet-open { overflow: hidden; }
+
 .toast {
-  position: fixed; left: 50%; bottom: 22px; translate: -50% 0;
+  position: fixed; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); translate: -50% 0;
   background: var(--ink); color: var(--bg); padding: 9px 18px; border-radius: 999px;
   font-size: 13.5px; box-shadow: var(--shadow); opacity: 0; pointer-events: none;
   transition: opacity .25s ease, translate .25s ease; z-index: 50;
@@ -404,7 +524,13 @@ footer a.donate:hover { border-color: var(--brand); color: var(--brand); }
 
 /* ═══════════════════ 看板模式 ═══════════════════
    給大螢幕／牆上的裝置：只留現在狀態與時間軸，字放大，橫向兩欄。 */
-body.kiosk { padding-block: 14px; padding-inline: 14px; }
+/* 看板模式邊距較窄，但 safe area 一樣要留 —— iPad 橫放時 home indicator 在下緣。 */
+body.kiosk {
+  padding-top:    calc(14px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  padding-left:   calc(14px + env(safe-area-inset-left, 0px));
+  padding-right:  calc(14px + env(safe-area-inset-right, 0px));
+}
 body.kiosk .wrap { max-width: none; gap: 14px; }
 body.kiosk .hide-kiosk { display: none; }
 body.kiosk .now, body.kiosk .timeline { border-radius: 20px; }
@@ -441,6 +567,8 @@ body.kiosk #kioskExit { display: inline-flex; }
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <select id="profPick" aria-label="選擇課表"></select>
+      <button class="btn btn-sm menu-btn hide-kiosk" id="menuBtn" type="button"
+              aria-label="設定與課表" aria-expanded="false" aria-controls="menuSheet">☰</button>
       <button class="btn btn-sm" id="kioskExit" type="button">離開看板</button>
     </div>
   </header>
@@ -449,11 +577,41 @@ body.kiosk #kioskExit { display: inline-flex; }
     <div class="now-stripe"></div>
     <div class="now-body">
       <span class="now-chip" id="nowChip">載入中</span>
-      <div class="now-period" id="nowPeriod">—</div>
+
+      <!-- 剩餘時間圓盤。data-on="0" 時整個退回原本的直排文字，
+           所以不需要另外準備一份 DOM。 -->
+      <div class="dial" id="dial" data-on="0">
+        <svg class="dial-svg" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+          <circle class="dial-track" cx="50" cy="50" r="44"></circle>
+          <path class="dial-wedge" id="dialWedge" d=""></path>
+          <g class="dial-ticks" id="dialTicks"></g>
+          <circle class="dial-hub" cx="50" cy="50" r="34"></circle>
+        </svg>
+        <div class="dial-face">
+          <div class="now-period" id="nowPeriod">—</div>
+          <div class="now-count num" id="nowCount">--:--</div>
+        </div>
+      </div>
+
+      <!-- 最後十分鐘才出現的點。一眼數得出來的數量上限大約 4~5 個，
+           40 顆要用數的，比讀數字還慢 —— 所以只在剩十分鐘內才拿出來。 -->
+      <div class="dots" id="nowDots" hidden></div>
+
       <div class="now-sub" id="nowSub"></div>
-      <div class="now-count num" id="nowCount">--:--</div>
       <div class="now-label" id="nowLabel">—</div>
       <div class="now-clock" id="nowClock">--:--:--</div>
+    </div>
+  </section>
+
+  <!-- 鈴聲開關。必須放在時間軸上面 —— 這是唯一非按不可的按鈕，
+       瀏覽器沒有這一下手勢就不會發出任何聲音，不能讓它躲在捲動之後。 -->
+  <section class="panel hide-kiosk">
+    <div class="panel-pad">
+      <div class="arm">
+        <button class="btn btn-primary" id="armBtn" type="button">開啟鈴聲</button>
+        <button class="btn" id="stopBtn" type="button">停止聲音</button>
+        <p class="arm-note" id="armNote">瀏覽器規定要先按一下才能發出聲音。按下後這一頁會照作息自動打鐘。</p>
+      </div>
     </div>
   </section>
 
@@ -471,14 +629,16 @@ body.kiosk #kioskExit { display: inline-flex; }
 
   <section class="timeline" id="timeline" aria-label="今天的作息"></section>
 
-  <!-- ── 鈴聲與外觀 ── -->
-  <section class="panel hide-kiosk">
+  <!-- ══ 設定與課表：平常收起來，不擋著小孩要看的東西 ══ -->
+  <div class="sheet" id="menuSheet" hidden>
+    <div class="sheet-head">
+      <strong>設定與課表</strong>
+      <button class="btn btn-sm" id="menuClose" type="button">完成</button>
+    </div>
+    <div class="sheet-body">
+
+  <section class="panel">
     <div class="panel-pad">
-      <div class="arm">
-        <button class="btn btn-primary" id="armBtn" type="button">開啟鈴聲</button>
-        <button class="btn" id="stopBtn" type="button">停止聲音</button>
-        <p class="arm-note" id="armNote">瀏覽器規定要先按一下才能發出聲音。按下後這一頁會照作息自動打鐘。</p>
-      </div>
 
       <div class="field">
         <label for="selBellStart">上課鐘</label>
@@ -642,6 +802,9 @@ body.kiosk #kioskExit { display: inline-flex; }
     <span id="donate"></span>
   </footer>
 
+    </div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -660,14 +823,15 @@ body.kiosk #kioskExit { display: inline-flex; }
 /* ═══════════════════════════════════════════════════════════════
    0. 贊助連結   ←← 要放贊助連結的話，只要改這一個地方
    ───────────────────────────────────────────────────────────────
-   把 Ko-fi 或 Buy Me a Coffee 的網址貼進 url，頁尾就會出現一顆小按鈕。
+   把收款頁的網址貼進 url，頁尾就會出現一顆小按鈕。
    留空（""）＝整個連結不顯示，不會出現壞掉的連結。
-     例： "https://ko-fi.com/yourname"
-          "https://buymeacoffee.com/yourname"
+     例： "https://p.ecpay.com.tw/XXXXXXX"   （綠界收款連結）
+          "https://ko-fi.com/yourname"
    ═══════════════════════════════════════════════════════════════ */
 const DONATE = {
   url: "",
-  文字: "這個小工具有幫到你嗎？請我喝杯咖啡"
+  // 不寫「請我喝杯咖啡」—— 這支 App 是 AI 寫的，燒掉的是 token 不是咖啡。
+  文字: "這個小工具有幫到你嗎？幫我補一點 token"
 };
 
 /* 星期用英文短碼。dict 而非 array，因為這是固定已知的七個 key，
@@ -791,7 +955,7 @@ function workProfile(id) {
 function defaultConfig() {
   return {
     version: FORMAT_VERSION,
-    appearance: { theme: "auto", bopomofo: false, kiosk: false, tick: true },
+    appearance: { theme: "auto", bopomofo: true, kiosk: false, tick: true },
     current: "p1",
     profiles: [schoolProfile("p1", "一年級（範例）", true)]
   };
@@ -1320,6 +1484,25 @@ function nextBell(p, from) {
   return null;
 }
 
+/**
+ * 從 from 往回找最近一個鈴，只找今天。找不到回 null —— 那表示今天還沒開始，
+ * 沒有「這一段從哪裡起算」，圓盤就不畫。
+ */
+function prevBell(p, from) {
+  const m = from.getHours() * 60 + from.getMinutes();
+  let best = null;
+  for (const ev of bellsFor(p, from)) {
+    if (ev.min > m) break;
+    best = ev;
+  }
+  if (!best) return null;
+  return {
+    at: new Date(from.getFullYear(), from.getMonth(), from.getDate(),
+                 Math.floor(best.min / 60), best.min % 60, 0, 0),
+    ev: best
+  };
+}
+
 function currentPeriod(p, now) {
   const m = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
   for (const r of periodsFor(p, now)) if (r.e > r.s && m >= r.s && m < r.e) return r;
@@ -1419,7 +1602,7 @@ function cleanConfig(raw) {
   if (raw.appearance && typeof raw.appearance === "object") {
     const a = raw.appearance;
     if (["auto", "paper", "chalk"].includes(a.theme)) out.appearance.theme = a.theme;
-    out.appearance.bopomofo = !!a.bopomofo;
+    out.appearance.bopomofo = a.bopomofo !== false;   // 沒寫就是開著（和預設一致）
     out.appearance.kiosk = !!a.kiosk;
     out.appearance.tick = a.tick !== false;      // 沒寫就是開著
   }
@@ -1693,6 +1876,111 @@ $("quickPlus").addEventListener("click", () => {
   toast("延長 1 分鐘");
 });
 
+/* ── 剩餘時間圓盤 ──────────────────────────────────────────────
+   扇形從滿到空，滿格＝這一段（上一個鈴到下一個鈴）自己的長度。
+   每次都從牆上時間重算，不累加 —— iPad 睡著再醒來位置才會是對的。 */
+
+const SVGNS = "http://www.w3.org/2000/svg";
+const DIAL_MAX_SEC = 90 * 60;   // 比這更長的區段不畫：掃得太慢，看不出在動
+const DOTS_FROM_SEC = 10 * 60;  // 剩這麼久以內才拿出點
+const DIAL_R = 44, DIAL_C = 50;
+
+let dialTotal = null;           // 目前刻度是照哪個總長畫的
+
+/** frac 0..1，從 12 點鐘方向順時針 */
+function dialPoint(frac, r) {
+  const a = frac * Math.PI * 2;
+  return [DIAL_C + r * Math.sin(a), DIAL_C - r * Math.cos(a)];
+}
+
+/** 從 12 點順時針掃 f 圈的扇形。f=1 要退一點點，不然弧的起終點重合畫不出來。 */
+function wedgePath(f) {
+  if (f <= 0) return "";
+  if (f >= 1) f = 0.9999;
+  const [x0, y0] = dialPoint(0, DIAL_R);
+  const [x1, y1] = dialPoint(f, DIAL_R);
+  return "M " + DIAL_C + " " + DIAL_C +
+         " L " + x0.toFixed(2) + " " + y0.toFixed(2) +
+         " A " + DIAL_R + " " + DIAL_R + " 0 " + (f > 0.5 ? 1 : 0) + " 1 " +
+         x1.toFixed(2) + " " + y1.toFixed(2) + " Z";
+}
+
+/** 圓周刻度：每 5 分鐘一格；整段不到 5 分鐘就改成每分鐘一格。
+    這是唯一能看出「40 分鐘的課」和「3 分鐘的倒數」差別的地方。 */
+function buildTicks(totalSec) {
+  const g = $("dialTicks");
+  g.replaceChildren();
+  const totalMin = totalSec / 60;
+  const step = totalMin <= 5 ? 1 : 5;
+  for (let m = step; m < totalMin - 0.01; m += step) {
+    const f = m / totalMin;
+    const [xa, ya] = dialPoint(f, DIAL_R);
+    const [xb, yb] = dialPoint(f, DIAL_R - 6);
+    const l = document.createElementNS(SVGNS, "line");
+    l.setAttribute("x1", xa.toFixed(2)); l.setAttribute("y1", ya.toFixed(2));
+    l.setAttribute("x2", xb.toFixed(2)); l.setAttribute("y2", yb.toFixed(2));
+    g.append(l);
+  }
+}
+
+/** 最後十分鐘的點。剩一分鐘以內就收起來 —— 那時候剩的就是最後一格扇形本身。 */
+function renderDots(remainSec, totalSec) {
+  const el = $("nowDots");
+  const show = remainSec > 60 && remainSec <= DOTS_FROM_SEC;
+  el.hidden = !show;
+  if (!show) { el.replaceChildren(); return; }
+  const n = Math.min(10, Math.ceil(totalSec / 60));
+  const lit = Math.min(n, Math.ceil(remainSec / 60));
+  if (el.childElementCount !== n) {
+    el.replaceChildren(...Array.from({ length: n }, () => document.createElement("i")));
+  }
+  [...el.children].forEach((c, i) => c.classList.toggle("off", i >= lit));
+  el.setAttribute("aria-label", "還剩 " + lit + " 分鐘");
+}
+
+/* 把圓心的字縮到放得下為止。
+   注音會把每個字撐到將近兩倍寬，「健康與體育」照 CSS 的字級一定爆出內圈；
+   科目名長度又是使用者自己填的，沒辦法用固定字級猜。所以量一次再縮。
+   只有文字、尺寸或外觀變了才重算 —— 每秒都量會逼瀏覽器一直重新排版。 */
+let fitKey = "";
+function fitFace() {
+  const dial = $("dial"), per = $("nowPeriod"), cnt = $("nowCount");
+  if (dial.dataset.on !== "1") { per.style.fontSize = ""; fitKey = ""; return; }
+  const face = dial.querySelector(".dial-face");
+  const boxW = face.clientWidth, boxH = face.clientHeight;
+  const key = [per.textContent, Math.round(boxW), document.body.className, cnt.className].join("|");
+  if (key === fitKey) return;
+  fitKey = key;
+  per.style.fontSize = "";                       // 先回到 CSS 的字級，再往下縮
+  for (let i = 0; i < 20; i++) {
+    const w = Math.max(per.scrollWidth, cnt.scrollWidth);
+    const h = per.offsetHeight + cnt.offsetHeight + 4;
+    if (w <= boxW && h <= boxH) break;
+    const next = parseFloat(getComputedStyle(per).fontSize) * 0.9;
+    if (next < 11) break;                        // 再小就看不清楚了，寧可讓它擠出來一點
+    per.style.fontSize = next + "px";
+  }
+}
+
+/** totalSec=null 或超出範圍 → 整個圓盤收起來，版面退回原本的直排文字 */
+function renderDial(remainSec, totalSec) {
+  const d = $("dial");
+  const on = totalSec !== null && totalSec > 0 && totalSec <= DIAL_MAX_SEC &&
+             remainSec !== null && remainSec >= 0;
+  d.dataset.on = on ? "1" : "0";
+  if (!on) { dialTotal = null; $("nowDots").hidden = true; $("nowDots").replaceChildren(); return; }
+  if (dialTotal !== totalSec) { buildTicks(totalSec); dialTotal = totalSec; }
+  $("dialWedge").setAttribute("d", wedgePath(Math.min(1, remainSec / totalSec)));
+  renderDots(remainSec, totalSec);
+}
+
+/** 最後十秒把數字放大成單一數字 —— 這時候要傳達的是「準備」，不是剩多久 */
+function applyFinalCount(el, secs) {
+  const final = secs !== null && secs > 0 && secs <= 10;
+  if (final) el.textContent = String(secs);
+  el.classList.toggle("final", final);
+}
+
 function renderNow(now) {
   const p = prof();
   const cur = currentPeriod(p, now);
@@ -1714,9 +2002,12 @@ function renderNow(now) {
     $("nowChip").textContent = "倒數中";
     setText($("nowPeriod"), fmtLen(quickTimer.totalSec));
     setText($("nowSub"), cur ? (cur.subject || cur.name) : "");   // 保留課表的脈絡
+    renderDial(left, quickTimer.totalSec);
+    applyFinalCount(countEl, left);
     $("nowLabel").textContent = nxt
       ? "倒數結束後回到作息　·　下一個鈴 " + fmtHM(nxt.ev.min)
       : "倒數結束後回到作息";
+    fitFace();
     return left;
   }
 
@@ -1746,7 +2037,6 @@ function renderNow(now) {
     chip = "今天沒安排";
     period = (now.getDay() === 0 || now.getDay() === 6) ? "週末" : "停課日";
   }
-
   if (nxt) {
     const h = Math.floor(secs / 3600), m2 = Math.floor((secs % 3600) / 60), s2 = secs % 60;
     countEl.textContent = h > 0
@@ -1755,15 +2045,23 @@ function renderNow(now) {
     countEl.classList.toggle("soon", soon);
     $("nowLabel").textContent = "距離　" + nxt.ev.labels.join("／") + "　" +
       fmtHM(nxt.ev.min) + (nxt.sameDay ? "" : "（" + DAY_LABEL[DAY_BY_INDEX[nxt.at.getDay()]] + "）");
+
+    // 圓盤的一整圈＝上一個鈴到下一個鈴。今天還沒打過鈴（prev=null）、
+    // 或下一個鈴在明天，就沒有「這一段」可言，圓盤收起來。
+    const prev = nxt.sameDay ? prevBell(p, now) : null;
+    renderDial(secs, prev ? Math.round((nxt.at - prev.at) / 1000) : null);
+    applyFinalCount(countEl, secs);
   } else {
     countEl.textContent = "—";
-    countEl.classList.remove("soon");
+    countEl.classList.remove("soon", "final");
     $("nowLabel").textContent = "這個課表沒有設定任何鈴聲";
+    renderDial(null, null);
   }
 
   $("nowChip").textContent = chip;
   setText($("nowPeriod"), period);
   setText($("nowSub"), sub);
+  fitFace();
   return secs;
 }
 
@@ -1942,6 +2240,7 @@ function applyAppearance() {
   document.documentElement.setAttribute("data-skin", cfg.appearance.theme);
   document.body.classList.toggle("bpmf-on", cfg.appearance.bopomofo);
   document.body.classList.toggle("kiosk", cfg.appearance.kiosk);
+  if (cfg.appearance.kiosk) setMenu(false);   // 抽屜是覆蓋層，看板模式下一定要關掉
   document.documentElement.style.setProperty("--scale", cfg.appearance.kiosk ? "1.5" : "1");
   $("bpmf").checked = cfg.appearance.bopomofo;
   $("kiosk").checked = cfg.appearance.kiosk;
@@ -2350,6 +2649,33 @@ $("tock").addEventListener("change", e => {
 $("kioskExit").addEventListener("click", () => {
   cfg.appearance.kiosk = false;
   saveConfig(); applyAppearance();
+});
+
+/* ── 設定抽屜 ── */
+/** open=true 開啟。moveFocus 只有使用者自己按的時候才給 true ——
+ *  啟動時 applyAppearance 也會呼叫這個函式，那時候搶焦點會很奇怪。 */
+function setMenu(open, moveFocus) {
+  const was = !$("menuSheet").hidden;
+  $("menuSheet").hidden = !open;
+  $("menuBtn").setAttribute("aria-expanded", String(!!open));
+  document.body.classList.toggle("sheet-open", !!open);
+  // 焦點不能留在已經看不見的東西上面（看板模式會直接關掉抽屜）
+  if (!open && was && $("menuSheet").contains(document.activeElement)) {
+    document.activeElement.blur();          // 看板模式下漢堡鈕自己也隱藏了，不能收焦點
+    if (moveFocus) $("menuBtn").focus();
+    return;
+  }
+  if (!moveFocus || was === !!open) return;
+  if (open) { $("menuSheet").querySelector(".sheet-body").scrollTop = 0; $("menuClose").focus(); }
+  else { $("menuBtn").focus(); }
+}
+
+$("menuBtn").addEventListener("click", () => setMenu($("menuSheet").hidden, true));
+$("menuClose").addEventListener("click", () => setMenu(false, true));
+
+// Esc 關閉 —— 鍵盤使用者（和外接鍵盤的平板）預期這樣
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("menuSheet").hidden) setMenu(false, true);
 });
 
 $("wake").addEventListener("change", updateWakeLock);
