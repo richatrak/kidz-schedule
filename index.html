@@ -526,6 +526,14 @@ body.kiosk #kioskExit { display: inline-flex; }
         </label>
         <span class="hint" id="wakeNote" style="flex:1 1 170px"></span>
       </div>
+
+      <hr class="rule">
+
+      <div class="field">
+        <label>這一頁</label>
+        <button class="btn btn-sm" id="reloadBtn" type="button">重新載入</button>
+        <span class="hint" id="loadedAt" style="flex:1 1 180px"></span>
+      </div>
     </div>
   </section>
 
@@ -1848,6 +1856,7 @@ function tick() {
 
   const secsToBell = renderNow(now);
   renderTimeline(now);
+  renderLoadedAt();
 
   // 最後一分鐘的滴答，和畫面上的紅色閃爍同步。一秒一下，高低交替。
   if (cfg.appearance.tick && Audio_.armed && secsToBell !== null && secsToBell > 0 && secsToBell <= 60) {
@@ -2345,6 +2354,34 @@ $("kioskExit").addEventListener("click", () => {
 
 $("wake").addEventListener("change", updateWakeLock);
 
+/* ── 重新載入 ──────────────────────────────────────────────────
+   iOS 主畫面的 App 沒有網址列，也就沒有重新整理按鈕。而這一頁會在
+   平板上連開好幾天 —— 推了新版它自己不會知道。所以得自己長一顆。
+
+   帶時間戳是為了繞過快取：普通的 reload 可能還是拿到同一份舊的。
+   載入後那個參數會被清掉，免得跟著跑進分享連結裡。 */
+const LOADED_AT = new Date();
+
+function renderLoadedAt() {
+  const mins = Math.floor((Date.now() - LOADED_AT.getTime()) / 60000);
+  const when = LOADED_AT.toLocaleString("zh-TW", {
+    month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false
+  });
+  let age;
+  if (mins < 1) age = "剛剛";
+  else if (mins < 60) age = "已開著 " + mins + " 分鐘";
+  else if (mins < 60 * 24) age = "已開著 " + Math.floor(mins / 60) + " 小時";
+  else age = "已開著 " + Math.floor(mins / 1440) + " 天";
+  $("loadedAt").textContent = when + " 載入・" + age;
+}
+
+$("reloadBtn").addEventListener("click", () => {
+  const u = new URL(location.href);
+  u.searchParams.set("r", Date.now().toString(36));
+  u.hash = "";
+  location.replace(u.toString());
+});
+
 /* ── 搬移備份 ── */
 
 $("exportBtn").addEventListener("click", () => {
@@ -2657,6 +2694,13 @@ const qs = new URLSearchParams(location.search);
 if (qs.get("kiosk") === "1") cfg.appearance.kiosk = true;
 if (["auto", "paper", "chalk"].includes(qs.get("skin"))) cfg.appearance.theme = qs.get("skin");
 if (qs.get("bpmf") === "1") cfg.appearance.bopomofo = true;
+
+// 重新載入用的快取破壞參數用完就清掉，不讓它跟著進分享連結
+if (qs.has("r")) {
+  const u = new URL(location.href);
+  u.searchParams.delete("r");
+  history.replaceState(null, "", u.pathname + u.search + u.hash);
+}
 
 // 臨時倒數：先把按鈕建好、把上次沒跑完的倒數接回來（存的是結束時刻）
 buildQuickPresets();
