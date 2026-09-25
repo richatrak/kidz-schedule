@@ -153,7 +153,10 @@ rt {
    縮小換不到緊湊，只會犧牲可讀性，所以字級不動、格線放寬。
 
    沒有注音的字也一起進格子，否則查不到讀音的字會比旁邊窄一截。 */
-.bpmf-on ruby,
+/* 格子套在外層 span 上。絕對不能把 display 設在 <ruby> 本身 ——
+   改掉它的 display 就不再是 ruby 容器，注音會變成排在字的右邊而不是上面
+   （字級越大偏得越明顯，40px 時偏了將近 40px）。 */
+.bpmf-on .bpmf-cell,
 .bpmf-on .bpmf-pad {
   display: inline-block;
   min-width: 2.6em;
@@ -305,7 +308,7 @@ body.kiosk .tgl { min-height: 44px; padding: 0 15px; gap: 7px; }
 }
 /* 時間軸上的注音要對齊格線（2.6em），圓心裡不用 —— 沒有東西要跟它對齊，
    而撐開的字距會讓三、四個字的科目塞不進內圈。 */
-.bpmf-on .dial[data-on="1"] .now-period ruby,
+.bpmf-on .dial[data-on="1"] .now-period .bpmf-cell,
 .bpmf-on .dial[data-on="1"] .now-period .bpmf-pad { min-width: 1.9em; }
 
 /* 有圓盤的時候不閃 —— 扇形最後一分鐘掃得最快，本來就夠明顯，
@@ -1113,7 +1116,12 @@ function textNode(text, withBpmf) {
     const rt = document.createElement("rt");
     rt.textContent = r;
     ruby.appendChild(rt);
-    frag.appendChild(ruby);
+    // 格子做在外層 span，不能直接改 <ruby> 的 display ——
+    // 那會讓它不再是 ruby 容器，注音就變成排在字的右邊而不是上面。
+    const cell = document.createElement("span");
+    cell.className = "bpmf-cell";
+    cell.appendChild(ruby);
+    frag.appendChild(cell);
   }
   return frag;
 }
