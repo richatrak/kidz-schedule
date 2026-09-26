@@ -118,7 +118,37 @@ body {
   body .sheet-head { padding-top: calc(14px + max(env(safe-area-inset-top, 0px), 24px)); }
 }
 
-.wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+/* 720px：直放的平板（810px 寬）才不會兩側各空一大塊。再寬就該分欄了。 */
+.wrap { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+
+/* ═══ 寬螢幕：左右兩欄 ═══
+   單欄鎖在 640px，在橫放的 iPad 上浪費 45% 寬度、桌機 55~66% —— 而右邊那
+   一片空白本來可以放下今天的完整時間軸，不用捲動。
+
+   只在「寬」的時候才分欄，不看長寬比：直立的平板再高也不該分欄。
+   看板模式有自己的兩欄規則（而且要填滿整個螢幕），所以這裡排除掉它。 */
+@media (min-width: 900px) {
+  body:not(.kiosk) .wrap {
+    max-width: 1500px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    align-items: start;
+    gap: 18px;
+  }
+  body:not(.kiosk) header    { grid-column: 1 / -1; grid-row: 1; }
+  body:not(.kiosk) .now      { grid-column: 1; grid-row: 2; }
+  body:not(.kiosk) .quick    { grid-column: 1; grid-row: 3; }
+  body:not(.kiosk) .timeline { grid-column: 2; grid-row: 2 / -1; }
+
+  /* 時鐘黏在上面：右邊的時間軸比左邊長，捲動看下午的課時
+     小孩還是看得到現在幾點、還剩多久。 */
+  body:not(.kiosk) .now { position: sticky; top: 14px; }
+
+  /* 欄位變寬了，圓盤跟著大一點。三個上限分別擋住：太寬的螢幕、太矮的螢幕、
+     以及「再大也沒意義」—— 470px 之後圓盤只是變胖，讀不出更多東西。 */
+  body:not(.kiosk) .dial[data-on="1"] { width: min(44vw, 62vmin, 520px); }
+}
 
 button, input, select, textarea { font: inherit; color: inherit; }
 :where(button, input, select, textarea, [tabindex]):focus-visible {
@@ -265,7 +295,7 @@ body.kiosk .tgl { min-height: 44px; padding: 0 15px; gap: 7px; }
 .dial { display: grid; place-items: center; }
 .dial[data-on="1"] {
   position: relative;
-  width: min(64vmin, 78vw, calc(400px * var(--scale)));
+  width: min(64vmin, 78vw, calc(440px * var(--scale)));
   aspect-ratio: 1;
   container-type: size;          /* 裡面的字級用 cqw 跟著圓盤走，不是跟著視窗 */
   margin: 10px auto 4px;
