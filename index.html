@@ -1,0 +1,3234 @@
+<!doctype html>
+<html lang="zh-Hant" data-skin="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>作息鐘</title>
+<meta name="description" content="把一天切成看得見的段落，時間到了自己打鐘。在家維持上學作息用。">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="作息鐘">
+<meta name="theme-color" content="#13201a">
+<!-- 圖示。iOS 主畫面只吃 apple-touch-icon 的 PNG（不吃 SVG），
+     沒有的話會拿網頁截圖當圖示。內嵌成 data URI 以維持單檔零相依。 -->
+<link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,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">
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,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">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;900&display=swap">
+
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   外觀主題
+   紙（亮）＝ 課本；黑板（暗）＝ 教室黑板。同一個材質世界的兩種光線。
+   data-skin: auto | paper | chalk
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  color-scheme: light;
+
+  --bg:        #f2f5ef;
+  --surface:   #ffffff;
+  --surface-2: #e7ece2;
+  --sunken:    #dde4d6;
+  --ink:       #18211a;
+  --ink-2:     #5c675c;
+  --ink-3:     #8b968a;
+  --line:      #d0d9c9;
+  --line-soft: #e2e8dc;
+  --brand:     #1f5b3f;
+
+  --st-class:  #1f5b3f;
+  --st-break:  #b06a10;
+  --st-lunch:  #4a6fa0;
+  --st-idle:   #7d8a7c;
+  --st-soon:   #b5301f;
+
+  --st-timer:    #6b4fa0;   /* 臨時倒數：紫色，和上課／下課／午休都不撞 */
+
+  --st-class-bg: #e4efe7;
+  --st-break-bg: #f7ecd8;
+  --st-lunch-bg: #e5ecf5;
+  --st-idle-bg:  #e9ece8;
+  --st-soon-bg:  #f8e3df;
+  --st-timer-bg: #ece6f5;
+
+  --shadow: 0 1px 2px rgba(24,33,26,.06), 0 8px 24px rgba(24,33,26,.06);
+
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --sans: "Noto Sans TC", -apple-system, BlinkMacSystemFont, "PingFang TC",
+          "Microsoft JhengHei", "Segoe UI", system-ui, sans-serif;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+
+  --scale: 1;
+}
+
+/* 黑板色票 —— 在 auto＋系統深色、或明確選了黑板時套用 */
+@media (prefers-color-scheme: dark) {
+  :root[data-skin="auto"] { color-scheme: dark;
+    --bg:#131d17; --surface:#1a271f; --surface-2:#213026; --sunken:#0f1813;
+    --ink:#edf2e8; --ink-2:#a2b2a4; --ink-3:#74836f;
+    --line:#2c4133; --line-soft:#223229; --brand:#7fd4a3;
+    --st-class:#7fd4a3; --st-break:#e8b05c; --st-lunch:#8fb2dd; --st-idle:#869485; --st-soon:#f0796a; --st-timer:#b39ce0;
+    --st-class-bg:#1d3527; --st-break-bg:#362b16; --st-lunch-bg:#1e2b3b; --st-idle-bg:#222c24; --st-soon-bg:#3a211d; --st-timer-bg:#2c2340;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.3);
+  }
+}
+:root[data-skin="chalk"] { color-scheme: dark;
+  --bg:#131d17; --surface:#1a271f; --surface-2:#213026; --sunken:#0f1813;
+  --ink:#edf2e8; --ink-2:#a2b2a4; --ink-3:#74836f;
+  --line:#2c4133; --line-soft:#223229; --brand:#7fd4a3;
+  --st-class:#7fd4a3; --st-break:#e8b05c; --st-lunch:#8fb2dd; --st-idle:#869485; --st-soon:#f0796a; --st-timer:#b39ce0;
+  --st-class-bg:#1d3527; --st-break-bg:#362b16; --st-lunch-bg:#1e2b3b; --st-idle-bg:#222c24; --st-soon-bg:#3a211d; --st-timer-bg:#2c2340;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.3);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* hidden 必須贏過任何 display 設定。瀏覽器預設的 [hidden]{display:none} 是
+   元素層級規則，會被 .quick-row{display:flex} 這種 class 選擇器蓋掉 ——
+   結果就是設了 hidden 卻還看得見。 */
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  /* 加上 safe area —— 主畫面 App 是整片全螢幕，狀態列（時間、電量）直接蓋在上面 */
+  padding-top:    calc(20px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px));
+  padding-left:   calc(16px + env(safe-area-inset-left, 0px));
+  padding-right:  calc(16px + env(safe-area-inset-right, 0px));
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* iPad 沒有瀏海，某些 iPadOS 版本在主畫面 App 下 safe-area-inset-top 會回報 0，
+   但半透明狀態列還是蓋在最上面。所以獨立 App 模式下再給一個下限。 */
+@media (display-mode: standalone) {
+  body { padding-top: calc(20px + max(env(safe-area-inset-top, 0px), 24px)); }
+  body .sheet-head { padding-top: calc(14px + max(env(safe-area-inset-top, 0px), 24px)); }
+}
+
+/* 720px：直放的平板（810px 寬）才不會兩側各空一大塊。再寬就該分欄了。 */
+.wrap { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+
+/* ═══ 寬螢幕：左右兩欄 ═══
+   單欄鎖在 640px，在橫放的 iPad 上浪費 45% 寬度、桌機 55~66% —— 而右邊那
+   一片空白本來可以放下今天的完整時間軸，不用捲動。
+
+   只在「寬」的時候才分欄，不看長寬比：直立的平板再高也不該分欄。
+   看板模式有自己的兩欄規則（而且要填滿整個螢幕），所以這裡排除掉它。 */
+@media (min-width: 900px) {
+  body:not(.kiosk) .wrap {
+    max-width: 1500px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    align-items: start;
+    gap: 18px;
+  }
+  body:not(.kiosk) header    { grid-column: 1 / -1; grid-row: 1; }
+  body:not(.kiosk) .now      { grid-column: 1; grid-row: 2; }
+  body:not(.kiosk) .quick    { grid-column: 1; grid-row: 3; }
+  body:not(.kiosk) .timeline { grid-column: 2; grid-row: 2 / -1; }
+
+  /* 時鐘黏在上面：右邊的時間軸比左邊長，捲動看下午的課時
+     小孩還是看得到現在幾點、還剩多久。 */
+  body:not(.kiosk) .now { position: sticky; top: 14px; }
+
+  /* 欄位變寬了，圓盤跟著大一點。三個上限分別擋住：太寬的螢幕、太矮的螢幕、
+     以及「再大也沒意義」—— 470px 之後圓盤只是變胖，讀不出更多東西。 */
+  body:not(.kiosk) .dial[data-on="1"] { width: min(44vw, 62vmin, 520px); }
+}
+
+button, input, select, textarea { font: inherit; color: inherit; }
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--brand); outline-offset: 2px; border-radius: var(--r-sm);
+}
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important; animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* ── 注音 ── */
+ruby { ruby-align: center; }
+rt {
+  font-size: .46em;
+  font-weight: 400;
+  letter-spacing: -.06em;
+  opacity: .7;
+  font-family: var(--sans);
+  user-select: none;
+}
+
+/* 注音的寬度差很多（ㄧ 一個符號 vs ㄙㄨㄛˇ 四個），照自然寬度排會參差不齊。
+   所以開注音時把每個漢字放進同寬的格子裡 —— 像注音課本的方格。
+
+   2.6em 是量出來的，不是估的：把字典裡 154 種讀音全部量過，最寬的
+   （ㄒㄩㄥˊ 這類四符號）在未加格線時佔 2.55em。注音符號會落到後備字型，
+   實際比看起來寬，而且把注音字級從 .46em 縮到 .30em 也只降到 2.01em ——
+   縮小換不到緊湊，只會犧牲可讀性，所以字級不動、格線放寬。
+
+   沒有注音的字也一起進格子，否則查不到讀音的字會比旁邊窄一截。 */
+/* 格子套在外層 span 上。絕對不能把 display 設在 <ruby> 本身 ——
+   改掉它的 display 就不再是 ruby 容器，注音會變成排在字的右邊而不是上面
+   （字級越大偏得越明顯，40px 時偏了將近 40px）。 */
+.bpmf-on .bpmf-cell,
+.bpmf-on .bpmf-pad {
+  display: inline-block;
+  min-width: 2.6em;
+  text-align: center;
+}
+.bpmf-on :is(.now-period, .tl-name, .tl-sub) { line-height: 2.3; }
+
+/* ═══════════════════ 頁首 ═══════════════════ */
+header { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+h1 { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: .06em; white-space: nowrap; }
+.today { font-size: 12.5px; color: var(--ink-2); letter-spacing: .03em; }
+/* 和 ☰ 同樣的 44px 觸控目標；字大一點，因為 ↻ 本身比 ☰ 細 */
+.reload-btn {
+  font-size: 19px; line-height: 1; padding: 0;
+  min-width: 44px; min-height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--ink-3);
+}
+
+#profPick {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+  padding: 5px 11px; font-size: 13px; font-weight: 500; max-width: 46vw;
+}
+
+/* ═══════════════════ 現在狀態 ═══════════════════ */
+.now {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-lg); box-shadow: var(--shadow); overflow: hidden;
+}
+.now-stripe { height: 5px; background: var(--state); transition: background .4s ease; }
+
+/* ═══ 狀態標籤 + 快速開關（卡片最上面那一列）═══
+   標籤靠左、開關靠右的單列。不做置中：置中要兩側等寬，四顆剛好卡在
+   卡片寬度的邊緣（需要 586px，卡片 598px），再多一顆就會換行。靠左不會。
+
+   這四個是「會反覆切」的開關，所以不收進 ☰ —— 而且看板模式下 ☰ 是隱藏的，
+   收進去等於按不到。它們只是去按 ☰ 裡對應的那個控制項，狀態沒有第二份。 */
+.now-head {
+  width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px;
+}
+.now-toggles {
+  display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px;
+  margin-left: auto;
+}
+.tgl {
+  display: inline-flex; align-items: center; gap: 4px;
+  /* 卡片最寬 640px，四顆並排要收到 60px 以內才排得下一列。
+     高度 40px 是觸控與版面高度的折衷（看板模式另外拉到 44）。 */
+  min-height: 40px; padding: 0 8px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface); color: var(--ink-3);
+  font-size: calc(12.5px * var(--scale)); line-height: 1; cursor: pointer;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+.tgl b { font-size: calc(14px * var(--scale)); font-weight: 700; }
+.tgl:hover { background: var(--sunken); }
+.tgl[aria-pressed="true"] { background: var(--state-bg); color: var(--state); border-color: currentColor; }
+body.kiosk .tgl { min-height: 44px; padding: 0 15px; gap: 7px; }
+
+/* 窄螢幕塞不下文字，留圖示就好。名稱在 aria-label 裡，讀螢幕的人不受影響。 */
+@media (max-width: 560px) {
+  .tgl span { display: none; }
+  .tgl { padding: 0 10px; }
+}
+.now-body { padding: 20px 20px 22px; display: flex; flex-direction: column; gap: 3px; align-items: center; text-align: center; }
+
+.now-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 4px 12px 4px 10px; border-radius: 999px;
+  background: var(--state-bg); color: var(--state);
+  font-size: 13px; font-weight: 500; letter-spacing: .04em;
+  transition: background .4s ease, color .4s ease;
+}
+.now-chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+.now-period {
+  font-size: calc(30px * var(--scale)); font-weight: 900; letter-spacing: .04em;
+  line-height: 1.3; text-wrap: balance; margin-top: 8px;
+}
+.now-sub { font-size: calc(15px * var(--scale)); color: var(--ink-2); margin-top: 2px; }
+.now-sub:empty { display: none; }
+
+.now-count {
+  font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 700;
+  font-size: clamp(56px, calc(21vw * var(--scale)), calc(92px * var(--scale)));
+  line-height: 1; letter-spacing: -.02em; color: var(--state);
+  margin-top: 12px; transition: color .4s ease;
+}
+.now-count.soon { animation: tick 1s steps(1) infinite; }
+@keyframes tick { 50% { opacity: .5; } }
+
+.now-label { font-size: calc(14px * var(--scale)); color: var(--ink-2); margin-top: 7px; text-wrap: balance; }
+.now-clock { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 13px; color: var(--ink-3); letter-spacing: .06em; margin-top: 12px; }
+
+/* ═══════════════════ 剩餘時間圓盤 ═══════════════════
+   一年級讀不出「還有 12 分鐘」—— 時刻到二年級才教。但「快沒了」看得懂：
+   扇形一直變小，不用讀字、不用數數，只要比大小，那是上小學前就有的能力。
+
+   滿格＝這一段自己的長度，不是固定的一小時。40 分鐘的課和 3 分鐘的臨時
+   倒數都從滿到空，短倒數才看得見在動（固定一小時刻度的話，3 分鐘只是一
+   條細縫）。代價很誠實：兩者在剛開始時長得一樣 —— 絕對長度交給圓周上的
+   刻度，每 5 分鐘一格。 */
+.dial { display: grid; place-items: center; }
+.dial[data-on="1"] {
+  position: relative;
+  width: min(64vmin, 78vw, calc(440px * var(--scale)));
+  aspect-ratio: 1;
+  container-type: size;          /* 裡面的字級用 cqw 跟著圓盤走，不是跟著視窗 */
+  margin: 10px auto 4px;
+}
+.dial-svg { display: none; }
+.dial[data-on="1"] .dial-svg { display: block; width: 100%; height: 100%; }
+
+.dial-track { fill: var(--sunken); }
+.dial-wedge { fill: var(--state); }
+.dial-hub   { fill: var(--surface); }
+/* 刻度用背景色刻上去，扇形有色與無色的兩邊都看得見 */
+.dial-ticks line { stroke: var(--bg); stroke-width: 1.6; stroke-linecap: round; opacity: .8; }
+
+.dial[data-on="1"] .dial-face {
+  /* 圓內接矩形不必是正方形，文字是寬扁的。內圈半徑 34%，給寬 52% x 高 42%：
+     角落到圓心 = hypot(26%, 21%) = 33.4% < 34%，四角仍在圈內。
+     高度要夠，是因為注音的標音列本身就佔掉一行 —— 正方形的盒子會把
+     兩個字的科目壓到 26px。 */
+  position: absolute; inset: 29% 24%;
+  display: grid; place-content: center; gap: 4px;
+  pointer-events: none;
+}
+/* 圓盤裡面：科目最大、數字退成小字。小孩認得的是形狀和科目名，
+   數字是給大人看的，也是給以後看得懂時刻的他。 */
+.dial[data-on="1"] .now-period {
+  margin-top: 0;
+  font-size: clamp(18px, calc(7.4vmin * var(--scale)), calc(40px * var(--scale)));  /* 舊瀏覽器後援 */
+  font-size: clamp(18px, 10cqw, calc(40px * var(--scale)));
+}
+.dial[data-on="1"] .now-count {
+  margin-top: 0; font-weight: 600;
+  font-size: clamp(15px, calc(3.6vmin * var(--scale)), calc(22px * var(--scale)));  /* 舊瀏覽器後援 */
+  font-size: clamp(15px, 5.6cqw, 26px);
+}
+/* 最後十秒：數字變回主角，這時候的訊息是「準備」不是「還早」 */
+.dial[data-on="1"] .now-count.final {
+  font-weight: 700;
+  font-size: clamp(44px, calc(15vmin * var(--scale)), calc(86px * var(--scale)));  /* 舊瀏覽器後援 */
+  font-size: clamp(44px, 30cqw, 220px);
+}
+/* 時間軸上的注音要對齊格線（2.6em），圓心裡不用 —— 沒有東西要跟它對齊，
+   而撐開的字距會讓三、四個字的科目塞不進內圈。 */
+.bpmf-on .dial[data-on="1"] .now-period .bpmf-cell,
+.bpmf-on .dial[data-on="1"] .now-period .bpmf-pad { min-width: 1.9em; }
+
+/* 有圓盤的時候不閃 —— 扇形最後一分鐘掃得最快，本來就夠明顯，
+   再加每秒閃爍只是製造焦慮。沒有圓盤時（長區段）才保留閃爍。 */
+.dial[data-on="1"] .now-count.soon { animation: none; }
+
+/* 最後十分鐘的點。數量少到可以一眼看出，而「剩十分鐘」正好是大人
+   嘴上會講的那句話。 */
+.dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; margin: 8px 0 2px; }
+.dots i { width: calc(15px * var(--scale)); aspect-ratio: 1; border-radius: 50%; background: var(--state); }
+.dots i.off { background: var(--sunken); }
+
+/* ═══════════════════ 臨時倒數 ═══════════════════ */
+.quick { padding: 10px 14px; }
+.quick-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.quick-label {
+  font-size: 12px; letter-spacing: .09em; color: var(--ink-3);
+  margin-right: 2px; white-space: nowrap;
+}
+.btn-quick {
+  padding: 5px 10px; font-size: 13px; min-width: 38px;
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+}
+.quick-running .quick-label { color: var(--st-timer); font-weight: 500; }
+
+/* ═══════════════════ 時間軸 ═══════════════════ */
+.timeline { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 6px 0; box-shadow: var(--shadow); }
+
+.tl-row { display: grid; grid-template-columns: 60px 12px 1fr auto; align-items: center; gap: 0 12px; padding: 9px 18px; position: relative; }
+.tl-row + .tl-row::before { content: ""; position: absolute; left: 90px; right: 18px; top: 0; border-top: 1px solid var(--line-soft); }
+
+.tl-time { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: calc(12.5px * var(--scale)); color: var(--ink-3); letter-spacing: -.01em; white-space: pre-line; }
+
+.tl-rail { justify-self: center; align-self: stretch; width: 2px; background: var(--line); position: relative; }
+.tl-row:first-child .tl-rail { background: linear-gradient(var(--surface) 0 50%, var(--line) 50% 100%); }
+.tl-row:last-child  .tl-rail { background: linear-gradient(var(--line) 0 50%, var(--surface) 50% 100%); }
+.tl-dot { position: absolute; top: 50%; left: 50%; translate: -50% -50%; width: 9px; height: 9px; border-radius: 50%; background: var(--surface); border: 2px solid var(--line); }
+
+.tl-main { min-width: 0; }
+.tl-name { font-size: calc(14.5px * var(--scale)); color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tl-sub { font-size: calc(13px * var(--scale)); color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tl-sub:empty { display: none; }
+
+.tl-tag { font-size: 11.5px; letter-spacing: .05em; color: var(--ink-3); padding: 1px 7px; border: 1px solid var(--line); border-radius: 999px; white-space: nowrap; }
+
+.tl-row.past :is(.tl-time, .tl-name, .tl-sub) { color: var(--ink-3); opacity: .55; }
+.tl-row.past .tl-dot { background: var(--line); }
+
+.tl-row.active { background: var(--state-bg); }
+.tl-row.active .tl-name { color: var(--ink); font-weight: 900; }
+.tl-row.active .tl-sub { color: var(--ink-2); }
+.tl-row.active .tl-time { color: var(--state); }
+.tl-row.active .tl-dot { background: var(--state); border-color: var(--state); width: 13px; height: 13px; box-shadow: 0 0 0 4px var(--state-bg); }
+.tl-row.active .tl-tag { border-color: var(--state); color: var(--state); }
+
+.tl-progress { grid-column: 3 / -1; height: 3px; border-radius: 2px; background: var(--sunken); overflow: hidden; margin-top: 7px; }
+.tl-progress > i { display: block; height: 100%; background: var(--state); border-radius: 2px; transition: width 1s linear; }
+
+.tl-empty { padding: 26px 18px; text-align: center; color: var(--ink-3); font-size: 14px; line-height: 1.8; }
+
+@keyframes rang { 0% { background: var(--st-soon-bg); } 100% { background: transparent; } }
+.tl-row.rang { animation: rang 2.4s ease-out; }
+
+/* ═══════════════════ 面板 / 控制項 ═══════════════════ */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); }
+.panel-pad { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
+
+
+.btn {
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+  border-radius: var(--r-md); padding: 9px 15px; cursor: pointer;
+  font-size: 14px; font-weight: 500; transition: background .15s ease, border-color .15s ease;
+}
+.btn:hover { background: var(--sunken); }
+.btn:active { transform: translateY(1px); }
+.btn-sm { padding: 6px 11px; font-size: 13px; }
+
+.btn-primary {
+  background: var(--brand); border-color: var(--brand); color: var(--bg);
+  font-weight: 900; letter-spacing: .04em; padding: 11px 22px; flex: 1 1 auto; min-width: 150px;
+}
+.btn-primary:hover { filter: brightness(1.08); background: var(--brand); }
+.btn-on { background: var(--st-class-bg); border-color: var(--st-class); color: var(--st-class); }
+.btn-on:hover { background: var(--st-class-bg); }
+.btn-danger:hover { border-color: var(--st-soon); color: var(--st-soon); background: var(--st-soon-bg); }
+
+
+.field { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.field > label:first-child { font-size: 12px; letter-spacing: .09em; color: var(--ink-3); min-width: 62px; }
+
+select, input[type="time"], input[type="text"], textarea {
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: var(--r-sm); padding: 6px 9px; font-size: 14px;
+}
+input[type="time"] { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+input[type="range"] { accent-color: var(--brand); flex: 1 1 120px; min-width: 110px; }
+
+.switch { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+.switch input { accent-color: var(--brand); width: 17px; height: 17px; }
+
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.seg button {
+  border: none; background: transparent; color: var(--ink-2);
+  padding: 6px 14px; font-size: 13px; cursor: pointer;
+}
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--brand); color: var(--bg); font-weight: 500; }
+
+/* ═══════════════════ 摺疊區 ═══════════════════ */
+details { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); overflow: hidden; }
+summary {
+  padding: 13px 18px; cursor: pointer; font-size: 14px; font-weight: 500;
+  list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+}
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "＋"; color: var(--ink-3); font-size: 15px; }
+details[open] summary { border-bottom: 1px solid var(--line-soft); }
+details[open] summary::after { content: "－"; }
+.details-body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 16px; }
+
+.sub-head { font-size: 12px; letter-spacing: .09em; color: var(--ink-3); margin: 0; }
+
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tab { border: 1px solid var(--line); background: transparent; color: var(--ink-2); border-radius: 999px; padding: 5px 13px; font-size: 13px; cursor: pointer; }
+.tab[aria-selected="true"] { background: var(--brand); border-color: var(--brand); color: var(--bg); font-weight: 500; }
+.tab.off { opacity: .5; }
+
+.tbl-scroll { overflow-x: auto; margin-inline: -18px; padding-inline: 18px; }
+table.edit { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+table.edit th {
+  text-align: left; font-size: 11px; letter-spacing: .09em; color: var(--ink-3);
+  font-weight: 500; padding: 0 8px 7px 0; white-space: nowrap;
+}
+table.edit td { padding: 3px 8px 3px 0; vertical-align: middle; }
+table.edit tr + tr td { border-top: 1px solid var(--line-soft); }
+table.edit input[type="text"] { width: 100%; }
+table.edit input[type="time"] { width: 102px; }
+table.edit td.chk { text-align: center; }
+table.edit input[type="checkbox"] { accent-color: var(--brand); width: 16px; height: 16px; }
+#timeTable { min-width: 470px; }
+#dayTable  { min-width: 430px; }
+.cell-fixed { color: var(--ink-3); white-space: nowrap; font-size: 13px; }
+.cell-fixed .num { font-size: 12px; }
+
+.row-del { border: none; background: transparent; color: var(--ink-3); cursor: pointer; font-size: 16px; padding: 2px 6px; border-radius: var(--r-sm); line-height: 1; }
+.row-del:hover { color: var(--st-soon); background: var(--st-soon-bg); }
+
+.wk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(86px, 1fr)); gap: 8px; }
+.wk-cell { display: flex; flex-direction: column; gap: 4px; }
+.wk-cell > span { font-size: 11px; letter-spacing: .08em; color: var(--ink-3); }
+.wk-cell select { width: 100%; }
+
+.hint { font-size: 12.5px; color: var(--ink-3); margin: 0; line-height: 1.65; }
+.hint code, footer code { font-family: var(--mono); font-size: 11.5px; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.rule { border: none; border-top: 1px solid var(--line-soft); margin: 2px 0; }
+
+.io-out {
+  width: 100%; min-height: 96px; background: var(--sunken);
+  border: 1px solid var(--line); border-radius: var(--r-sm); padding: 10px;
+  font-family: var(--mono); font-size: 11.5px; line-height: 1.55; color: var(--ink-2);
+  resize: vertical; white-space: pre; overflow-wrap: normal; overflow-x: auto;
+}
+
+#scanBox {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+#scanVideo {
+  width: min(100%, 320px);
+  aspect-ratio: 1;
+  container-type: size;          /* 裡面的字級用 cqw 跟著圓盤走，不是跟著視窗 */
+  object-fit: cover;
+  background: var(--sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.qr {
+  background: #fff;
+  padding: 10px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  width: max-content;
+  max-width: 100%;
+}
+.qr svg { display: block; width: 260px; max-width: 100%; height: auto; }
+
+/* ═══════════════════ 設定抽屜 ═══════════════════
+   編輯課表、鈴聲、外觀這些東西平常收起來 —— 小孩每天看的是時鐘，
+   不是設定。做成整頁覆蓋而不是側邊滑出，因為主要裝置是手機和平板，
+   整頁不用煩惱寬度。 */
+/* 44px 是手指的最小可靠目標；這顆是小孩和大人唯一的入口，不能瘦。 */
+.menu-btn {
+  font-size: 18px; line-height: 1; padding: 0;
+  min-width: 44px; min-height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  overscroll-behavior: contain;
+}
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) 14px calc(16px + env(safe-area-inset-left, 0px));
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 15px;
+  letter-spacing: .04em;
+  flex: 0 0 auto;
+}
+.sheet-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px calc(16px + env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+}
+.sheet-body > footer { margin-top: 4px; }
+body.sheet-open { overflow: hidden; }
+
+.toast {
+  position: fixed; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); translate: -50% 0;
+  background: var(--ink); color: var(--bg); padding: 9px 18px; border-radius: 999px;
+  font-size: 13.5px; box-shadow: var(--shadow); opacity: 0; pointer-events: none;
+  transition: opacity .25s ease, translate .25s ease; z-index: 50;
+  max-width: calc(100vw - 32px); text-align: center;
+}
+.toast.show { opacity: 1; translate: -50% -6px; }
+
+footer { font-size: 12px; color: var(--ink-3); text-align: center; line-height: 1.7; }
+footer a.donate {
+  display: inline-block;
+  margin-top: 10px;
+  color: var(--ink-2);
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 13px;
+  background: var(--surface);
+  transition: border-color .15s ease, color .15s ease;
+}
+footer a.donate:hover { border-color: var(--brand); color: var(--brand); }
+
+/* ═══════════════════ 看板模式 ═══════════════════
+   給大螢幕／牆上的裝置：只留現在狀態與時間軸，字放大，橫向兩欄。 */
+/* 看板模式邊距較窄，但 safe area 一樣要留 —— iPad 橫放時 home indicator 在下緣。 */
+body.kiosk {
+  padding-top:    calc(14px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  padding-left:   calc(14px + env(safe-area-inset-left, 0px));
+  padding-right:  calc(14px + env(safe-area-inset-right, 0px));
+}
+body.kiosk .wrap { max-width: none; gap: 14px; }
+/* 看板是給整個房間看的，不是給桌前一個人看的：倒數要從對面牆看得見。
+   圓心留了一大片空白（盒子 309px 寬，數字才 87px），把它用掉。
+   這裡刻意不跟主畫面一致 —— 主畫面小孩靠形狀判斷，看板上大人要讀數字。 */
+body.kiosk .dial[data-on="1"] .now-count { font-size: clamp(22px, 13cqw, 84px); }
+body.kiosk .hide-kiosk { display: none; }
+body.kiosk .now, body.kiosk .timeline { border-radius: 20px; }
+body.kiosk #kioskExit { display: inline-flex; }
+#kioskExit { display: none; }
+
+@media (min-aspect-ratio: 5/4) {
+  body.kiosk .wrap {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
+    align-items: start;
+    height: calc(100vh - 28px);
+  }
+  body.kiosk header { grid-column: 1 / -1; }
+  body.kiosk .timeline { max-height: 100%; overflow-y: auto; }
+}
+
+@media (max-width: 430px) {
+  .tl-row { grid-template-columns: 54px 12px 1fr; padding-inline: 14px; }
+  .tl-row + .tl-row::before { left: 80px; right: 14px; }
+  .tl-tag { display: none; }
+  #profPick { max-width: 40vw; }
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <h1>作息鐘</h1>
+      <span class="today num" id="today">—</span>
+      <!-- 重新載入。iOS 主畫面的 App 沒有網址列，看板模式連 ☰ 都沒有 ——
+           這是那兩種情況下唯一能更新到新版的按鈕，所以擺在最顯眼的左上角。 -->
+      <button class="btn btn-sm reload-btn" id="reloadBtn" type="button" aria-label="重新載入">↻</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select id="profPick" aria-label="選擇課表"></select>
+      <button class="btn btn-sm menu-btn hide-kiosk" id="menuBtn" type="button"
+              aria-label="設定與課表" aria-expanded="false" aria-controls="menuSheet">☰</button>
+      <button class="btn btn-sm" id="kioskExit" type="button">離開看板</button>
+    </div>
+  </header>
+  <section class="now" id="nowCard" aria-live="polite">
+    <div class="now-stripe"></div>
+    <div class="now-body">
+
+      <!-- 狀態標籤和快速開關同一列：三欄格線（彈性／標籤／彈性），標籤才會是
+           真正置中，不會被右邊的開關推歪。開關放正常排版而不是絕對定位 ——
+           絕對定位不佔空間，窄螢幕下會直接壓在標籤和圓盤上面。 -->
+      <div class="now-head">
+        <span class="now-chip" id="nowChip">載入中</span>
+        <!-- 會反覆切的四個開關。收進 ☰ 的話看板模式根本按不到（☰ 在看板模式是隱藏的）。
+             它們不自己存狀態，只是去按 ☰ 裡那四個 checkbox，所以兩邊永遠一致。 -->
+        <div class="now-toggles" id="nowToggles">
+          <button class="tgl" id="tglBell"  type="button" aria-pressed="false" aria-label="鈴聲開關"><b>♫</b><span>鈴聲</span></button>
+          <button class="tgl" id="tglBpmf"  type="button" aria-pressed="false" aria-label="顯示注音"><b>ㄅ</b><span>注音</span></button>
+          <button class="tgl" id="tglWake"  type="button" aria-pressed="false" aria-label="保持螢幕開啟"><b>☀</b><span>螢幕</span></button>
+          <button class="tgl" id="tglKiosk" type="button" aria-pressed="false" aria-label="看板模式"><b>▣</b><span>看板</span></button>
+        </div>
+      </div>
+
+      <!-- 剩餘時間圓盤。data-on="0" 時整個退回原本的直排文字，
+           所以不需要另外準備一份 DOM。 -->
+      <div class="dial" id="dial" data-on="0">
+        <svg class="dial-svg" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+          <circle class="dial-track" cx="50" cy="50" r="44"></circle>
+          <path class="dial-wedge" id="dialWedge" d=""></path>
+          <g class="dial-ticks" id="dialTicks"></g>
+          <circle class="dial-hub" cx="50" cy="50" r="34"></circle>
+        </svg>
+        <div class="dial-face">
+          <div class="now-period" id="nowPeriod">—</div>
+          <div class="now-count num" id="nowCount">--:--</div>
+        </div>
+      </div>
+
+      <!-- 最後十分鐘才出現的點。一眼數得出來的數量上限大約 4~5 個，
+           40 顆要用數的，比讀數字還慢 —— 所以只在剩十分鐘內才拿出來。 -->
+      <div class="dots" id="nowDots" hidden></div>
+
+      <div class="now-sub" id="nowSub"></div>
+      <div class="now-label" id="nowLabel">—</div>
+      <div class="now-clock" id="nowClock">--:--:--</div>
+    </div>
+  </section>
+
+  <!-- 臨時倒數：和作息無關的一次性計時（「再十分鐘就收玩具」） -->
+  <section class="panel quick hide-kiosk" id="quickPanel">
+    <div class="quick-row" id="quickPresets">
+      <span class="quick-label">臨時倒數・分鐘</span>
+    </div>
+    <div class="quick-row quick-running" id="quickRunning" hidden>
+      <span class="quick-label" id="quickState">倒數中</span>
+      <button class="btn btn-sm" id="quickPlus" type="button">＋1 分</button>
+      <button class="btn btn-sm btn-danger" id="quickStop" type="button">停止</button>
+    </div>
+  </section>
+
+  <section class="timeline" id="timeline" aria-label="今天的作息"></section>
+
+  <!-- ══ 設定與課表：平常收起來，不擋著小孩要看的東西 ══ -->
+  <div class="sheet" id="menuSheet" hidden>
+    <div class="sheet-head">
+      <strong>設定與課表</strong>
+      <button class="btn btn-sm" id="menuClose" type="button">完成</button>
+    </div>
+    <div class="sheet-body">
+
+  <section class="panel">
+    <div class="panel-pad">
+
+      <div class="field">
+        <label for="selBellStart">上課鐘</label>
+        <select id="selBellStart"></select>
+        <button class="btn btn-sm" type="button" data-try="start">試聽</button>
+      </div>
+
+      <div class="field">
+        <label for="selBellEnd">下課鐘</label>
+        <select id="selBellEnd"></select>
+        <button class="btn btn-sm" type="button" data-try="end">試聽</button>
+      </div>
+
+      <!-- 「停止聲音」從主畫面搬進來。鐘只響幾秒，真正會想按它的時機是在這裡
+           試聽的時候 —— 放在試聽旁邊比放在外面合理。 -->
+      <div class="field">
+        <button class="btn btn-sm" id="stopBtn" type="button">停止聲音</button>
+        <span class="hint" style="flex:1 1 170px">試聽到一半想停就按這裡。</span>
+      </div>
+
+      <div class="field">
+        <label for="vol">音量</label>
+        <input type="range" id="vol" min="0" max="100" step="1" value="70">
+        <span class="num" id="volVal" style="min-width:3.2em;color:var(--ink-3);font-size:13px">70%</span>
+      </div>
+
+      <hr class="rule">
+
+      <div class="field">
+        <label>外觀</label>
+        <div class="seg" id="skinSeg" role="group" aria-label="外觀主題">
+          <button type="button" data-skin="auto"  aria-pressed="true">跟隨系統</button>
+          <button type="button" data-skin="paper" aria-pressed="false">課本</button>
+          <button type="button" data-skin="chalk" aria-pressed="false">黑板</button>
+        </div>
+      </div>
+
+      <!-- 只剩滴答。注音／看板／螢幕都已經是卡片右上角那排按鈕了，
+           同一個狀態開兩個入口，遲早會有一邊忘了同步。 -->
+      <div class="field">
+        <label class="switch" for="tock">
+          <input type="checkbox" id="tock" checked>
+          <span>倒數滴答聲（鈴聲開著才有）</span>
+        </label>
+      </div>
+
+      <hr class="rule">
+
+      <!-- 「重新載入」搬到左上角了；這裡只留「幾點載入、開了多久」。 -->
+      <div class="field">
+        <label>這一頁</label>
+        <span class="hint" id="loadedAt" style="flex:1 1 180px"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 編輯課表：一天一張表，時間和科目在同一列 ── -->
+  <details class="hide-kiosk" id="edDay">
+    <summary>編輯課表</summary>
+    <div class="details-body">
+
+      <div class="tabs" id="dayTabs" role="tablist" aria-label="星期"></div>
+
+      <div class="tbl-scroll">
+        <table class="edit" id="dayTable">
+          <thead><tr>
+            <th>時段</th><th>開始</th><th>結束</th>
+            <th id="thPrimary">科目</th><th id="thSecondary">老師</th>
+            <th style="text-align:center">上課<br>響鈴</th>
+            <th style="text-align:center">下課<br>響鈴</th><th></th>
+          </tr></thead>
+          <tbody id="dayBody"></tbody>
+        </table>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-sm" id="addSlot" type="button">＋ 加一個時段</button>
+        <button class="btn btn-sm" id="copyDayAll" type="button">複製整天到…</button>
+        <button class="btn btn-sm" id="copyDayTimes" type="button">只複製時間到…</button>
+        <button class="btn btn-sm btn-danger" id="clearDay" type="button">這天不上課</button>
+      </div>
+
+      <p class="hint" id="dayHint"></p>
+    </div>
+  </details>
+
+  <!-- ── 課表管理 ── -->
+  <details class="hide-kiosk" id="edProf">
+    <summary>課表管理</summary>
+    <div class="details-body">
+      <p class="hint">
+        一個課表 = 一個人的一整套設定（時段、科目、鈴聲）。
+        有兩個小孩就開兩個，上面的下拉選單一秒切換。
+      </p>
+
+      <div class="field">
+        <label for="profName">名稱</label>
+        <input type="text" id="profName" style="flex:1 1 150px" maxlength="20">
+      </div>
+
+      <div class="field">
+        <label for="fldMain">欄位名稱</label>
+        <input type="text" id="fldMain" style="width:110px" maxlength="6" aria-label="主要欄位名稱">
+        <input type="text" id="fldSecond" style="width:110px" maxlength="6" aria-label="次要欄位名稱">
+        <span class="hint" style="flex:1 1 100%">
+          學生用「科目／老師」；上班族可以改成「目標／地點」之類的。改了只影響顯示，資料不動。
+        </span>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-sm" id="profAdd" type="button">＋ 新增空白課表</button>
+        <button class="btn btn-sm" id="profDup" type="button">複製目前這個</button>
+        <button class="btn btn-sm" id="profUp" type="button">↑ 上移</button>
+        <button class="btn btn-sm" id="profDown" type="button">↓ 下移</button>
+        <button class="btn btn-sm" id="profWork" type="button">＋ 上班族範例</button>
+        <button class="btn btn-sm btn-danger" id="profDel" type="button">刪除目前這個</button>
+      </div>
+    </div>
+  </details>
+
+  <!-- ── 搬移備份 ── -->
+  <details class="hide-kiosk" id="io">
+    <summary>搬到其他裝置 · 備份</summary>
+    <div class="details-body">
+      <div class="btn-row">
+        <button class="btn btn-sm" id="shareBtn" type="button">複製分享連結</button>
+        <button class="btn btn-sm" id="qrBtn" type="button">顯示 QR Code</button>
+        <button class="btn btn-sm" id="exportBtn" type="button">匯出全部</button>
+        <button class="btn btn-sm" id="exportOne" type="button">只匯出目前課表</button>
+        <button class="btn btn-sm" id="scanBtn" type="button">掃描 QR</button>
+        <button class="btn btn-sm" id="pasteBtn" type="button">貼上連結／設定</button>
+        <button class="btn btn-sm" id="importBtn" type="button">匯入</button>
+        <button class="btn btn-sm" id="downloadBtn" type="button">下載 JSON</button>
+      </div>
+      <div id="scanBox" hidden>
+        <video id="scanVideo" playsinline muted></video>
+        <p class="hint" id="scanHint">正在開啟相機…</p>
+        <button class="btn btn-sm" id="scanStop" type="button">停止掃描</button>
+      </div>
+      <div id="qrBox" data-shown="0"></div>
+      <textarea class="io-out" id="ioBox" spellcheck="false"
+        aria-label="設定內容（JSON）"
+        placeholder="按「匯出」會把設定貼到這裡。要匯入的話，把分享連結或整段 JSON 貼進來，再按「匯入」。"></textarea>
+      <p class="hint">
+        匯入時會自動判斷：整包設定就全部取代，單一課表就加進現有清單。
+        這裡的 JSON 和 Windows 版共用同一個格式。
+      </p>
+    </div>
+  </details>
+
+  <footer class="hide-kiosk">
+    設定只存在這台裝置的瀏覽器裡，不會傳到任何地方。<br>
+    螢幕關掉或切到別的 App 時手機會暫停這一頁，鈴聲就不會響 —— 讓它亮著。
+    <span id="donate"></span>
+  </footer>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+/* ═══════════════════════════════════════════════════════════════
+   1. 資料模型
+   ───────────────────────────────────────────────────────────────
+   設定 = { version, appearance, current, profiles[] }
+   profile = 一個人的一整套：days（七天，每天一個時段陣列）＋ labels ＋ bells
+   時間和科目放在同一筆，每天各自獨立 —— 要讓幾天一樣用「複製」，不用共用骨架。
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════
+   0. 贊助連結   ←← 要放贊助連結的話，只要改這一個地方
+   ───────────────────────────────────────────────────────────────
+   把收款頁的網址貼進 url，頁尾就會出現一顆小按鈕。
+   留空（""）＝整個連結不顯示，不會出現壞掉的連結。
+     例： "https://p.ecpay.com.tw/XXXXXXX"   （綠界收款連結）
+          "https://ko-fi.com/yourname"
+   ═══════════════════════════════════════════════════════════════ */
+const DONATE = {
+  url: "",
+  文字: "這個小工具有幫到你嗎？幫我補一點 token"
+};
+
+/* 星期用英文短碼。dict 而非 array，因為這是固定已知的七個 key，
+   而且要能用 Date.getDay() 直接查。 */
+const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+const DAY_BY_INDEX = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];   // Date.getDay()
+const DAY_LABEL = { mon: "一", tue: "二", wed: "三", thu: "四", fri: "五", sat: "六", sun: "日" };
+
+/* 一個時段就是一筆完整資料 —— 時間和科目放在一起，不跨表對應。
+   每一天各自擁有自己的時段清單；要讓幾天一樣，用「複製到其他天」。 */
+const period = (name, start, end, ringStart, ringEnd, subject, teacher) =>
+  ({ name, start, end, ringStart, ringEnd, subject: subject || "", teacher: teacher || "" });
+
+/* 預設的一天：七節課的完整作息，每個交界都響鈴。
+   這是「在家維持作息」的形狀 —— 以學校時間為底，但下午不放掉。
+   每個時段的頭尾都開鈴；接壤的邊界（12:00、12:40、13:20、15:40）
+   由 bellsFor 合併成一次，不會連響兩下。
+   只是建立預設值用的模板，存進去之後每天就各自獨立了。 */
+const FULL_DAY = [
+  ["導師時間", "07:50", "08:30", true, true],
+  ["第一節",   "08:40", "09:20", true, true],
+  ["第二節",   "09:30", "10:10", true, true],
+  ["第三節",   "10:30", "11:10", true, true],
+  ["第四節",   "11:20", "12:00", true, true],
+  ["午餐",     "12:00", "12:40", true, true],
+  ["午休",     "12:40", "13:20", true, true],
+  ["第五節",   "13:20", "14:00", true, true],
+  ["第六節",   "14:10", "14:50", true, true],
+  ["第七節",   "15:00", "15:40", true, true],
+  ["放學",     "15:40", "15:40", true, false]
+];
+
+/** 用模板 + 可選的科目內容組出一天 */
+function buildDay(shape, content) {
+  return shape.map(([name, start, end, rs, re]) => {
+    const c = (content && content[name]) || {};
+    return period(name, start, end, rs, re, c[0], c[1]);
+  });
+}
+
+/* 範例內容 —— 動物老師，一看就知道是假資料。
+   科目的排列是隨意編的，不對應任何一個真實班級。 */
+const 早安 = ["早安時間", "貓頭鷹老師"];
+const 午餐 = ["午餐", "值日生"];
+const 午休 = ["午休", "全班一起睡"];
+
+const DEMO = {
+  mon: { 導師時間: 早安, 第一節: ["國語","貓頭鷹老師"], 第二節: ["生活","小熊老師"],
+         第三節: ["音樂","黃鸝老師"], 第四節: ["數學","小松鼠老師"], 午餐, 午休,
+         第五節: ["自然","烏龜老師"], 第六節: ["美勞","蜘蛛老師"], 第七節: ["體育","獵豹老師"] },
+  tue: { 導師時間: 早安, 第一節: ["數學","小松鼠老師"], 第二節: ["體育","獵豹老師"],
+         第三節: ["國語","貓頭鷹老師"], 第四節: ["美勞","蜘蛛老師"], 午餐, 午休,
+         第五節: ["自然","烏龜老師"], 第六節: ["探索課","狐狸老師"], 第七節: ["手語","猩猩老師"] },
+  wed: { 導師時間: 早安, 第一節: ["英語","鸚鵡老師"], 第二節: ["國語","貓頭鷹老師"],
+         第三節: ["數學","小松鼠老師"], 第四節: ["體育","獵豹老師"], 午餐, 午休,
+         第五節: ["音樂","黃鸝老師"], 第六節: ["生活","小熊老師"], 第七節: ["自然","烏龜老師"] },
+  thu: { 導師時間: 早安, 第一節: ["生活","小熊老師"], 第二節: ["數學","小松鼠老師"],
+         第三節: ["國語","貓頭鷹老師"], 第四節: ["健康","長頸鹿老師"], 午餐, 午休,
+         第五節: ["美勞","蜘蛛老師"], 第六節: ["體育","獵豹老師"], 第七節: ["探索課","狐狸老師"] },
+  fri: { 導師時間: 早安, 第一節: ["數學","小松鼠老師"], 第二節: ["音樂","黃鸝老師"],
+         第三節: ["英語","鸚鵡老師"], 第四節: ["生活","小熊老師"], 午餐, 午休,
+         第五節: ["國語","貓頭鷹老師"], 第六節: ["自然","烏龜老師"], 第七節: ["手語","猩猩老師"] }
+};
+
+/* 預設：週一到週五都是完整的一天，週末不上課。 */
+function schoolProfile(id, name, withDemo) {
+  const D = withDemo ? DEMO : {};
+  return {
+    id: id,
+    name: name || "新課表",
+    labels: { primary: "科目", secondary: "老師" },
+    bells: { start: "campus", end: "campus", volume: 0.7 },
+    days: {
+      mon: buildDay(FULL_DAY, D.mon),
+      tue: buildDay(FULL_DAY, D.tue),
+      wed: buildDay(FULL_DAY, D.wed),
+      thu: buildDay(FULL_DAY, D.thu),
+      fri: buildDay(FULL_DAY, D.fri),
+      sat: null,
+      sun: null
+    },
+    holidays: []
+  };
+}
+
+/** 上班族範例：同一個結構，只是把欄位標籤換成「目標／地點」 */
+function workProfile(id) {
+  const shape = [
+    ["開工",           "09:00", "09:15", true,  false],
+    ["專注時段一",     "09:15", "10:45", true,  true],
+    ["休息",           "10:45", "11:00", false, true],
+    ["專注時段二",     "11:00", "12:00", true,  true],
+    ["午休",           "12:00", "13:00", false, true],
+    ["專注時段三",     "13:00", "14:30", true,  true],
+    ["喘口氣",         "14:30", "14:45", false, true],
+    ["會議／協作",     "14:45", "16:30", true,  true],
+    ["收尾與明日計畫", "16:30", "17:30", true,  true],
+    ["下班",           "17:30", "17:30", true,  false]
+  ];
+  const content = {
+    開工: ["收信、排今天的順序", "自己的位子"],
+    專注時段一: ["當天最難的那件事", "不開通訊軟體"],
+    專注時段二: ["接續上一段", ""],
+    "會議／協作": ["會議與回覆", ""],
+    收尾與明日計畫: ["寫下明天的第一件事", ""]
+  };
+  const days = {};
+  for (const d of DAYS) {
+    days[d] = (d === "sat" || d === "sun") ? null : buildDay(shape, content);
+  }
+  return {
+    id: id,
+    name: "上班族範例",
+    labels: { primary: "目標", secondary: "地點" },
+    bells: { start: "toll", end: "fur-elise", volume: 0.5 },
+    days: days,
+    holidays: []
+  };
+}
+
+function defaultConfig() {
+  return {
+    version: FORMAT_VERSION,
+    appearance: { theme: "auto", bopomofo: true, kiosk: false, tick: true },
+    current: "p1",
+    profiles: [schoolProfile("p1", "一年級（範例）", true)]
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   2. 注音
+   ───────────────────────────────────────────────────────────────
+   詞優先於字，因為破音字要靠詞來判斷（音樂ㄩㄝˋ vs 快樂ㄌㄜˋ）。
+   查不到的字就不標 —— 寧可留白也不要標錯。
+   ═══════════════════════════════════════════════════════════════ */
+
+/* 詞表：只收「照單字預設拼會拼錯」的詞（破音字靠這一層解決）。
+   讀音採中華民國教育部標準（台灣讀音），與大陸讀音不同處一律以台灣為準：
+   星期ㄑㄧˊ、綜合ㄗㄨㄥˋ、休息ㄒㄧˊ。
+   「一」「不」的連讀變調（一定ㄧˊ、不是ㄅㄨˊ）不標，與低年級課本一致標本調。 */
+const BPMF_WORDS = {
+  "音樂": "ㄧㄣ ㄩㄝˋ", "數學": "ㄕㄨˋ ㄒㄩㄝˊ", "星期": "ㄒㄧㄥ ㄑㄧˊ",
+  "休息": "ㄒㄧㄡ ㄒㄧˊ", "朝會": "ㄓㄠ ㄏㄨㄟˋ", "模式": "ㄇㄛˊ ㄕˋ",
+  "切換": "ㄑㄧㄝ ㄏㄨㄢˋ", "音量": "ㄧㄣ ㄌㄧㄤˋ", "時間": "ㄕˊ ㄐㄧㄢ",
+  "分鐘": "ㄈㄣ ㄓㄨㄥ", "連結": "ㄌㄧㄢˊ ㄐㄧㄝˊ", "結束": "ㄐㄧㄝˊ ㄕㄨˋ",
+  "地點": "ㄉㄧˋ ㄉㄧㄢˇ", "看板": "ㄎㄢˋ ㄅㄢˇ", "沒有": "ㄇㄟˊ ㄧㄡˇ",
+  "社會": "ㄕㄜˋ ㄏㄨㄟˋ", "班會": "ㄅㄢ ㄏㄨㄟˋ", "作息": "ㄗㄨㄛˋ ㄒㄧˊ",
+  "打掃": "ㄉㄚˇ ㄙㄠˇ", "綜合": "ㄗㄨㄥˋ ㄏㄜˊ", "閱讀": "ㄩㄝˋ ㄉㄨˊ",
+  "美勞": "ㄇㄟˇ ㄌㄠˊ", "分享": "ㄈㄣ ㄒㄧㄤˇ",
+  "本土語": "ㄅㄣˇ ㄊㄨˇ ㄩˇ", "長頸鹿": "ㄔㄤˊ ㄐㄧㄥˇ ㄌㄨˋ"
+};
+
+/* 單字表：查不到詞時的後備。查不到的字就不標 —— 寧可留白也不要標錯。 */
+const BPMF_CHARS = {
+  "第":"ㄉㄧˋ","一":"ㄧ","二":"ㄦˋ","三":"ㄙㄢ","四":"ㄙˋ","五":"ㄨˇ","六":"ㄌㄧㄡˋ",
+  "七":"ㄑㄧ","八":"ㄅㄚ","九":"ㄐㄧㄡˇ","十":"ㄕˊ","節":"ㄐㄧㄝˊ","課":"ㄎㄜˋ",
+  "時":"ㄕˊ","間":"ㄐㄧㄢ","導":"ㄉㄠˇ","師":"ㄕ","午":"ㄨˇ","休":"ㄒㄧㄡ","餐":"ㄘㄢ",
+  "放":"ㄈㄤˋ","學":"ㄒㄩㄝˊ","上":"ㄕㄤˋ","下":"ㄒㄧㄚˋ","息":"ㄒㄧˊ","打":"ㄉㄚˇ",
+  "掃":"ㄙㄠˇ","升":"ㄕㄥ","旗":"ㄑㄧˊ","早":"ㄗㄠˇ","自":"ㄗˋ","習":"ㄒㄧˊ","用":"ㄩㄥˋ",
+  "朝":"ㄓㄠ","星":"ㄒㄧㄥ","期":"ㄑㄧˊ","日":"ㄖˋ","週":"ㄓㄡ","末":"ㄇㄛˋ",
+  "國":"ㄍㄨㄛˊ","語":"ㄩˇ","數":"ㄕㄨˋ","英":"ㄧㄥ","文":"ㄨㄣˊ","體":"ㄊㄧˇ","育":"ㄩˋ",
+  "音":"ㄧㄣ","樂":"ㄌㄜˋ","美":"ㄇㄟˇ","術":"ㄕㄨˋ","勞":"ㄌㄠˊ","生":"ㄕㄥ","活":"ㄏㄨㄛˊ",
+  "健":"ㄐㄧㄢˋ","康":"ㄎㄤ","然":"ㄖㄢˊ","社":"ㄕㄜˋ","會":"ㄏㄨㄟˋ","電":"ㄉㄧㄢˋ",
+  "腦":"ㄋㄠˇ","資":"ㄗ","訊":"ㄒㄩㄣˋ","本":"ㄅㄣˇ","土":"ㄊㄨˇ","台":"ㄊㄞˊ","灣":"ㄨㄢ",
+  "手":"ㄕㄡˇ","閩":"ㄇㄧㄣˇ","南":"ㄋㄢˊ","客":"ㄎㄜˋ","綜":"ㄗㄨㄥˋ","合":"ㄏㄜˊ",
+  "藝":"ㄧˋ","人":"ㄖㄣˊ","童":"ㄊㄨㄥˊ","軍":"ㄐㄩㄣ","輔":"ㄈㄨˇ","班":"ㄅㄢ",
+  "探":"ㄊㄢˋ","索":"ㄙㄨㄛˇ","書":"ㄕㄨ","法":"ㄈㄚˇ","閱":"ㄩㄝˋ","讀":"ㄉㄨˊ",
+  "鐘":"ㄓㄨㄥ","聲":"ㄕㄥ",
+  "響":"ㄒㄧㄤˇ","鈴":"ㄌㄧㄥˊ","開":"ㄎㄞ","始":"ㄕˇ","結":"ㄐㄧㄝˊ","束":"ㄕㄨˋ",
+  "現":"ㄒㄧㄢˋ","在":"ㄗㄞˋ","距":"ㄐㄩˋ","離":"ㄌㄧˊ","分":"ㄈㄣ","秒":"ㄇㄧㄠˇ",
+  "小":"ㄒㄧㄠˇ","設":"ㄕㄜˋ","定":"ㄉㄧㄥˋ","作":"ㄗㄨㄛˋ","編":"ㄅㄧㄢ","輯":"ㄐㄧˊ",
+  "匯":"ㄏㄨㄟˋ","出":"ㄔㄨ","入":"ㄖㄨˋ","享":"ㄒㄧㄤˇ","連":"ㄌㄧㄢˊ","量":"ㄌㄧㄤˋ",
+  "螢":"ㄧㄥˊ","幕":"ㄇㄨˋ","保":"ㄅㄠˇ","持":"ㄔˊ","主":"ㄓㄨˇ","題":"ㄊㄧˊ",
+  "注":"ㄓㄨˋ","字":"ㄗˋ","型":"ㄒㄧㄥˊ","切":"ㄑㄧㄝ","換":"ㄏㄨㄢˋ","新":"ㄒㄧㄣ",
+  "增":"ㄗㄥ","刪":"ㄕㄢ","除":"ㄔㄨˊ","回":"ㄏㄨㄟˊ","復":"ㄈㄨˋ","預":"ㄩˋ",
+  "科":"ㄎㄜ","目":"ㄇㄨˋ","老":"ㄌㄠˇ","姓":"ㄒㄧㄥˋ","名":"ㄇㄧㄥˊ","地":"ㄉㄧˋ",
+  "點":"ㄉㄧㄢˇ","標":"ㄅㄧㄠ","今":"ㄐㄧㄣ","天":"ㄊㄧㄢ","明":"ㄇㄧㄥˊ","沒":"ㄇㄟˊ",
+  "有":"ㄧㄡˇ","不":"ㄅㄨˋ","整":"ㄓㄥˇ","半":"ㄅㄢˋ","模":"ㄇㄛˊ","式":"ㄕˋ",
+  "看":"ㄎㄢˋ","板":"ㄅㄢˇ","機":"ㄐㄧ",
+  // 範例課表的動物老師
+  "貓":"ㄇㄠ","頭":"ㄊㄡˊ","鷹":"ㄧㄥ","松":"ㄙㄨㄥ","鼠":"ㄕㄨˇ","獵":"ㄌㄧㄝˋ",
+  "豹":"ㄅㄠˋ","鸚":"ㄧㄥ","鵡":"ㄨˇ","黃":"ㄏㄨㄤˊ","鸝":"ㄌㄧˊ","熊":"ㄒㄩㄥˊ",
+  "蜘":"ㄓ","蛛":"ㄓㄨ","大":"ㄉㄚˋ","象":"ㄒㄧㄤˋ","長":"ㄔㄤˊ","頸":"ㄐㄧㄥˇ",
+  "鹿":"ㄌㄨˋ","烏":"ㄨ","龜":"ㄍㄨㄟ","狐":"ㄏㄨˊ","狸":"ㄌㄧˊ","猩":"ㄒㄧㄥ",
+  "值":"ㄓˊ","安":"ㄢ","全":"ㄑㄩㄢˊ","起":"ㄑㄧˇ","睡":"ㄕㄨㄟˋ"
+};
+
+/** 把一段文字切成 [字, 注音|null] 陣列；詞優先，最長比對 */
+function annotate(text) {
+  const out = [];
+  const s = String(text || "");
+  let i = 0;
+  const maxWord = Math.max(2, ...Object.keys(BPMF_WORDS).map(w => w.length));
+
+  while (i < s.length) {
+    let hit = null;
+    for (let len = Math.min(maxWord, s.length - i); len >= 2; len--) {
+      const w = s.slice(i, i + len);
+      if (BPMF_WORDS[w]) { hit = { w, r: BPMF_WORDS[w].split(/\s+/) }; break; }
+    }
+    if (hit) {
+      hit.w.split("").forEach((ch, k) => out.push([ch, hit.r[k] || null]));
+      i += hit.w.length;
+    } else {
+      const ch = s[i];
+      out.push([ch, BPMF_CHARS[ch] || null]);
+      i += 1;
+    }
+  }
+  return out;
+}
+
+/** 依開關產生帶注音或不帶注音的節點 */
+function textNode(text, withBpmf) {
+  if (!withBpmf) return document.createTextNode(text);
+  const frag = document.createDocumentFragment();
+  for (const [ch, r] of annotate(text)) {
+    if (!r) {
+      // 查不到讀音的漢字也要進格子，不然會比有注音的字窄一截；
+      // 標點、英數不進格子，那樣反而難看。
+      if (/[㐀-鿿]/.test(ch)) {
+        const pad = document.createElement("span");
+        pad.className = "bpmf-pad";
+        pad.textContent = ch;
+        frag.appendChild(pad);
+      } else {
+        frag.appendChild(document.createTextNode(ch));
+      }
+      continue;
+    }
+    const ruby = document.createElement("ruby");
+    ruby.appendChild(document.createTextNode(ch));
+    const rt = document.createElement("rt");
+    rt.textContent = r;
+    ruby.appendChild(rt);
+    // 格子做在外層 span，不能直接改 <ruby> 的 display ——
+    // 那會讓它不再是 ruby 容器，注音就變成排在字的右邊而不是上面。
+    const cell = document.createElement("span");
+    cell.className = "bpmf-cell";
+    cell.appendChild(ruby);
+    frag.appendChild(cell);
+  }
+  return frag;
+}
+
+function setText(el, text) {
+  el.replaceChildren(textNode(text, cfg.appearance.bopomofo));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   3. 鈴聲合成（Web Audio，不需要任何音檔）
+   ═══════════════════════════════════════════════════════════════ */
+
+const BELLS = {
+  "campus":            { label: "校園鐘聲（長）", make: makeCampus },
+  "campus-short":      { label: "校園鐘聲（短）", make: makeCampusShort },
+  "westminster":       { label: "西敏長鐘聲（鑄鐘音色）", make: makeWestminsterFull },
+  "westminster-short": { label: "西敏短鐘聲（鑄鐘音色）", make: makeWestminsterShort },
+  "toll":              { label: "單音大鐘",   make: makeToll },
+  "buzzer":            { label: "電鈴",       make: makeBuzzer },
+  "fur-elise":         { label: "給愛麗絲",   make: makeFurElise },
+  "none":              { label: "不響（靜音）", make: null }
+};
+
+const W = { Gs: 415.30, Fs: 369.99, E: 329.63, B: 246.94 };   // 西敏寺原調 E 大調
+
+/* 鐘的泛音不是整數倍 —— 這組比例是「聽起來像鐘、不像嗶聲」的關鍵。
+   ratio 相對基音的頻率倍數；gain 音量；decay 衰減秒數（低音拖最久）。 */
+const BELL_PARTIALS = [
+  { ratio: 0.50, gain: 0.55, decay: 7.0 },   // hum
+  { ratio: 1.00, gain: 1.00, decay: 5.5 },   // prime
+  { ratio: 1.19, gain: 0.52, decay: 3.6 },   // tierce（小三度，鐘的特徵）
+  { ratio: 1.50, gain: 0.36, decay: 2.8 },   // quint
+  { ratio: 2.00, gain: 0.44, decay: 2.4 },   // nominal
+  { ratio: 2.65, gain: 0.20, decay: 1.5 },
+  { ratio: 3.35, gain: 0.13, decay: 1.0 },
+  { ratio: 4.40, gain: 0.08, decay: 0.6 }
+];
+
+function strikeBell(ctx, dest, freq, when, level, decayScale) {
+  const ds = decayScale || 1;
+
+  for (const p of BELL_PARTIALS) {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = freq * p.ratio * (1 + (p.ratio > 1 ? 0.0012 : -0.0009));
+
+    const dur = p.decay * ds;
+    const peak = level * p.gain * 0.16;
+    g.gain.setValueAtTime(0, when);
+    g.gain.linearRampToValueAtTime(peak, when + 0.004);            // 4ms 起音，避免爆音
+    g.gain.exponentialRampToValueAtTime(peak * 0.0008, when + dur);
+    g.gain.linearRampToValueAtTime(0, when + dur + 0.03);          // 收到真正的零
+
+    osc.connect(g).connect(dest);
+    osc.start(when);
+    osc.stop(when + dur + 0.06);
+  }
+
+  // 敲擊瞬間的金屬雜訊
+  const sr = ctx.sampleRate, len = Math.max(1, Math.floor(sr * 0.035));
+  const buf = ctx.createBuffer(1, len, sr);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const bp = ctx.createBiquadFilter();
+  bp.type = "bandpass"; bp.frequency.value = freq * 4.2; bp.Q.value = 1.1;
+  const ng = ctx.createGain(); ng.gain.value = level * 0.05;
+  src.connect(bp).connect(ng).connect(dest);
+  src.start(when);
+}
+
+function makeWestminsterShort(ctx, dest, t0) {
+  const seq = [W.Gs, W.Fs, W.E, W.B], step = 0.95, gap = 1.5;
+  let t = t0;
+  for (let rep = 0; rep < 2; rep++) {
+    seq.forEach((f, i) => strikeBell(ctx, dest, f, t + i * step, 1.0));
+    t += seq.length * step + gap;
+  }
+  return t - gap + 5;
+}
+
+function makeWestminsterFull(ctx, dest, t0) {
+  const phrases = [
+    [W.Gs, W.Fs, W.E, W.B],
+    [W.E,  W.Gs, W.Fs, W.B],
+    [W.E,  W.Fs, W.Gs, W.E],
+    [W.Gs, W.E,  W.Fs, W.B]
+  ];
+  const step = 0.92, gap = 1.35;
+  let t = t0;
+  for (const ph of phrases) {
+    ph.forEach((f, i) => strikeBell(ctx, dest, f, t + i * step, 1.0));
+    t += ph.length * step + gap;
+  }
+  return t - gap + 5;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   校園鐘聲 —— 依一段實際校園鐘聲錄音「量測後重新合成」。
+
+   量到的是事實（音高、節奏、泛音比例、衰減曲線），輸出的每一個取樣點
+   都由下面的程式算出，不含原錄音的任何資料。
+   曲調為西敏鐘聲 Westminster Quarters（1793，公共領域）。
+
+   量測值：
+     音     F#4 366 / G#4 413 / A#4 463 / C#4 275 Hz（約低於標準音 13 分）
+     節奏   句內 0.90 s，換句 2.70 s（＝句末休止 1.80 s）
+     音色   諧波型，八度泛音比基音更強（1:0.55、2:1.00、5:0.28）—— 電子
+            鐘琴／管鐘，不是鑄鐘，所以沒有鑄鐘的 1.19 小三度
+     衰減   −10 dB @ 1.02 s、−20 dB @ 2.28 s、−30 dB @ 3.06 s
+   ───────────────────────────────────────────────────────────── */
+const CAMPUS = { Fs: 366.0, Gs: 413.0, As: 463.0, Cs: 275.0 };
+
+const CHIME_PARTIALS = [
+  { ratio: 1.00, gain: 0.55, decay: 8.0 },   // 基音，拖最久
+  { ratio: 2.00, gain: 1.00, decay: 6.8 },   // 八度 —— 這顆才是聽到的主音
+  { ratio: 3.00, gain: 0.12, decay: 3.0 },
+  { ratio: 5.00, gain: 0.28, decay: 3.5 },   // 錄音裡明顯的高泛音
+  { ratio: 6.00, gain: 0.06, decay: 1.8 },
+  { ratio: 8.00, gain: 0.04, decay: 1.0 }
+];
+
+function strikeChime(ctx, dest, freq, when, level) {
+  for (const p of CHIME_PARTIALS) {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = "sine";
+    // 極輕微的失諧，避免整數倍泛音疊出電子感的死板
+    osc.frequency.value = freq * p.ratio * (1 + (p.ratio > 1 ? 0.0006 : 0));
+
+    // 0.20 是量出來的：最壞情況（全部泛音同相疊加）約 −4 dBFS，
+    // 和其他鈴聲的響度一致，切換時不會忽大忽小，也不會破音。
+    const peak = level * p.gain * 0.20;
+    g.gain.setValueAtTime(0, when);
+    g.gain.linearRampToValueAtTime(peak, when + 0.005);
+    g.gain.exponentialRampToValueAtTime(peak * 0.0008, when + p.decay);
+    g.gain.linearRampToValueAtTime(0, when + p.decay + 0.03);
+
+    osc.connect(g).connect(dest);
+    osc.start(when);
+    osc.stop(when + p.decay + 0.06);
+  }
+
+  // 很短的敲擊聲，比鑄鐘輕
+  const sr = ctx.sampleRate, len = Math.max(1, Math.floor(sr * 0.022));
+  const buf = ctx.createBuffer(1, len, sr);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 4);
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const bp = ctx.createBiquadFilter();
+  bp.type = "bandpass"; bp.frequency.value = freq * 5.2; bp.Q.value = 0.9;
+  const ng = ctx.createGain(); ng.gain.value = level * 0.028;
+  src.connect(bp).connect(ng).connect(dest);
+  src.start(when);
+}
+
+function makeCampus(ctx, dest, t0) {
+  const C = CAMPUS;
+  const phrases = [
+    [C.Fs, C.As, C.Gs, C.Cs],
+    [C.Fs, C.Gs, C.As, C.Fs],
+    [C.As, C.Fs, C.Gs, C.Cs],
+    [C.Cs, C.Gs, C.As, C.Fs]
+  ];
+  const step = 0.90, rest = 1.80;
+  let t = t0;
+  for (const ph of phrases) {
+    ph.forEach((f, i) => strikeChime(ctx, dest, f, t + i * step, 1.0));
+    t += ph.length * step + rest;
+  }
+  return t - rest + 4;
+}
+
+/** 只有前兩句，給下課用的短版（約 11 秒） */
+function makeCampusShort(ctx, dest, t0) {
+  const C = CAMPUS;
+  const phrases = [
+    [C.Fs, C.As, C.Gs, C.Cs],
+    [C.Cs, C.Gs, C.As, C.Fs]
+  ];
+  const step = 0.90, rest = 1.80;
+  let t = t0;
+  for (const ph of phrases) {
+    ph.forEach((f, i) => strikeChime(ctx, dest, f, t + i * step, 1.0));
+    t += ph.length * step + rest;
+  }
+  return t - rest + 4;
+}
+
+function makeToll(ctx, dest, t0) {
+  for (let i = 0; i < 3; i++) strikeBell(ctx, dest, 146.83, t0 + i * 2.6, 1.15, 1.9);  // D3
+  return t0 + 2 * 2.6 + 7;
+}
+
+function makeBuzzer(ctx, dest, t0) {
+  const dur = 3.4;
+  const osc = ctx.createOscillator(); osc.type = "square"; osc.frequency.value = 620;
+  const det = ctx.createOscillator(); det.type = "square"; det.frequency.value = 631;
+  const lfo = ctx.createOscillator(); lfo.type = "sine";   lfo.frequency.value = 6.2;
+
+  const lfoGain = ctx.createGain(); lfoGain.gain.value = 0.34;
+  const body = ctx.createGain();    body.gain.value = 0.42;
+  lfo.connect(lfoGain).connect(body.gain);
+
+  const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 2600;
+
+  const env = ctx.createGain();
+  env.gain.setValueAtTime(0, t0);
+  env.gain.linearRampToValueAtTime(0.16, t0 + 0.012);
+  env.gain.setValueAtTime(0.16, t0 + dur - 0.08);
+  env.gain.linearRampToValueAtTime(0, t0 + dur);
+
+  osc.connect(body); det.connect(body);
+  body.connect(lp).connect(env).connect(dest);
+  [osc, det, lfo].forEach(o => { o.start(t0); o.stop(t0 + dur + 0.05); });
+  return t0 + dur + 0.2;
+}
+
+function makeFurElise(ctx, dest, t0) {
+  const N = { E5: 659.26, Ds5: 622.25, B4: 493.88, D5: 587.33, C5: 523.25,
+              A4: 440.00, C4: 261.63, E4: 329.63, Gs4: 415.30 };
+  const mel = [
+    [N.E5,1],[N.Ds5,1],[N.E5,1],[N.Ds5,1],[N.E5,1],[N.B4,1],[N.D5,1],[N.C5,1],
+    [N.A4,3],[null,1],[N.C4,1],[N.E4,1],[N.A4,1],[N.B4,3],[null,1],
+    [N.E4,1],[N.Gs4,1],[N.B4,1],[N.C5,3],[null,1],
+    [N.E4,1],[N.E5,1],[N.Ds5,1],[N.E5,1],[N.Ds5,1],[N.E5,1],[N.B4,1],[N.D5,1],[N.C5,1],
+    [N.A4,4]
+  ];
+  const unit = 0.147;
+  let t = t0;
+  for (const [f, n] of mel) { if (f) pluck(ctx, dest, f, t, n * unit); t += n * unit; }
+  return t + 1.6;
+}
+
+function pluck(ctx, dest, freq, when, hold) {
+  for (const [r, g0, dc] of [[1, 1.0, 2.4], [2, 0.30, 1.5], [3, 0.13, 0.9], [4.2, 0.06, 0.5]]) {
+    const osc = ctx.createOscillator(); const g = ctx.createGain();
+    osc.type = "sine"; osc.frequency.value = freq * r;
+    const dur = Math.max(hold + 0.25, dc), peak = g0 * 0.14;
+    g.gain.setValueAtTime(0, when);
+    g.gain.linearRampToValueAtTime(peak, when + 0.005);
+    g.gain.exponentialRampToValueAtTime(peak * 0.001, when + dur);
+    g.gain.linearRampToValueAtTime(0, when + dur + 0.02);
+    osc.connect(g).connect(dest);
+    osc.start(when); osc.stop(when + dur + 0.05);
+  }
+}
+
+/* 滴答聲的兩層音量。調這兩個數字就能改大小 —— 目標 peak 約 -18 dBFS。 */
+const TOCK_NOISE = 0.25;   // 敲擊瞬態
+const TOCK_TONE  = 0.14;   // 木質共鳴
+
+const Audio_ = {
+  ctx: null, master: null, active: [], armed: false,
+
+  async arm() {
+    if (!this.ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return false;
+      this.ctx = new AC();
+      this.master = this.ctx.createGain();
+      this.master.gain.value = prof().bells.volume;
+      this.master.connect(this.ctx.destination);
+    }
+    if (this.ctx.state !== "running") {
+      try { await this.ctx.resume(); } catch (e) { return false; }
+    }
+    // iOS 要在使用者手勢裡真的送出一次聲音，音訊才算完全解鎖
+    const s = this.ctx.createBufferSource();
+    s.buffer = this.ctx.createBuffer(1, 1, this.ctx.sampleRate);
+    s.connect(this.ctx.destination);
+    s.start(0);
+    this.armed = this.ctx.state === "running";
+    return this.armed;
+  },
+
+  setVolume(v) { if (this.master) this.master.gain.value = v; },
+
+  play(key) {
+    const bell = BELLS[key];
+    if (!bell || !bell.make || !this.ctx || this.ctx.state !== "running") return;
+    const bus = this.ctx.createGain();
+    bus.gain.value = 1;
+    bus.connect(this.master);
+    const endAt = bell.make(this.ctx, bus, this.ctx.currentTime + 0.04);
+    this.active.push(bus);
+    setTimeout(() => {
+      try { bus.disconnect(); } catch (e) {}
+      this.active = this.active.filter(b => b !== bus);
+    }, Math.max(500, (endAt - this.ctx.currentTime) * 1000 + 400));
+  },
+
+  /** 倒數最後一分鐘的滴答聲。高低兩種交替，聽起來才像時鐘而不是電子嗶聲。
+   *
+   *  原本只有 16ms 的窄帶雜訊（Q=3.2），量出來 peak −32 dBFS、有效長度 8ms，
+   *  比鐘聲整整低 24 dB。而且 100ms 以下的聲音人耳幾乎整合不到能量 ——
+   *  所以「聽不到」不只是音量問題，是太短又沒有音高。
+   *
+   *  現在拆成兩層，跟真的機械鐘一樣：
+   *    敲擊瞬態  短雜訊過帶通，Q 放寬到 1.4（原本 3.2 把大半能量濾掉了）
+   *    木質共鳴  三角波短衰減，給它一個音高，耳朵才抓得住
+   *  目標 peak 約 −18 dBFS：清楚聽得到，但仍明顯低於鐘聲的 −7 dBFS —— 
+   *  它是預告，不是鐘本身。 */
+  tock(high) {
+    if (!this.ctx || this.ctx.state !== "running") return;
+    const ctx = this.ctx, t = ctx.currentTime + 0.01;
+    const f = high ? 2300 : 1550;   // 滴 / 答
+
+    const bus = ctx.createGain();
+    bus.gain.value = 1;
+    bus.connect(this.master);
+
+    // ── 敲擊瞬態 ──
+    const sr = ctx.sampleRate, len = Math.max(1, Math.floor(sr * 0.016));
+    const buf = ctx.createBuffer(1, len, sr);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 5);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const bp = ctx.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = f;
+    bp.Q.value = 1.4;
+    const gn = ctx.createGain();
+    gn.gain.setValueAtTime(TOCK_NOISE, t);
+    gn.gain.exponentialRampToValueAtTime(0.0008, t + 0.05);
+    src.connect(bp).connect(gn).connect(bus);
+    src.start(t);
+
+    // ── 木質共鳴 ──
+    const osc = ctx.createOscillator();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(f, t);
+    osc.frequency.exponentialRampToValueAtTime(f * 0.86, t + 0.06);   // 微微下滑＝敲到東西的感覺
+    const go = ctx.createGain();
+    go.gain.setValueAtTime(0.0001, t);
+    go.gain.exponentialRampToValueAtTime(TOCK_TONE, t + 0.004);
+    go.gain.exponentialRampToValueAtTime(0.0008, t + 0.075);
+    go.gain.linearRampToValueAtTime(0, t + 0.085);
+    osc.connect(go).connect(bus);
+    osc.start(t);
+    osc.stop(t + 0.1);
+
+    setTimeout(() => { try { bus.disconnect(); } catch (e) {} }, 400);
+  },
+
+  stopAll() {
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    for (const bus of this.active) {
+      try {
+        bus.gain.cancelScheduledValues(now);
+        bus.gain.setValueAtTime(bus.gain.value, now);
+        bus.gain.linearRampToValueAtTime(0, now + 0.14);        // 淡出，不硬切
+        setTimeout(() => { try { bus.disconnect(); } catch (e) {} }, 300);
+      } catch (e) {}
+    }
+    this.active = [];
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   4. 作息引擎
+   ═══════════════════════════════════════════════════════════════ */
+
+function parseHM(s) {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(String(s == null ? "" : s).trim());
+  if (!m) return null;
+  const h = +m[1], mi = +m[2];
+  return (h > 23 || mi > 59) ? null : h * 60 + mi;
+}
+
+const fmtHM = mins =>
+  String(Math.floor(mins / 60)).padStart(2, "0") + ":" + String(mins % 60).padStart(2, "0");
+
+const dateKey = d =>
+  d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+
+/** 這一天有沒有安排（週末、停課日、空清單 = 沒有） */
+function dayOf(p, date) {
+  if ((p.holidays || []).includes(dateKey(date))) return null;
+  const list = p.days[DAY_BY_INDEX[date.getDay()]];
+  return (Array.isArray(list) && list.length) ? list : null;
+}
+
+/** 某一天的時段。沒有跨表對應了 —— 時間和科目本來就在同一筆。 */
+function periodsFor(p, date) {
+  const list = dayOf(p, date);
+  if (!list) return [];
+  return list
+    .map(r => ({
+      name: r.name,
+      subject: (r.subject || "").trim(),
+      teacher: (r.teacher || "").trim(),
+      s: parseHM(r.start), e: parseHM(r.end),
+      bs: !!r.ringStart, be: !!r.ringEnd
+    }))
+    .filter(r => r.s !== null && r.e !== null && r.e >= r.s)
+    .sort((a, b) => a.s - b.s || a.e - b.e);
+}
+
+/** 休息性質的時段（午餐、午休、放學…）—— 進入這些時段要響的是下課鐘 */
+const REST_SLOT = /午休|午餐|用餐|休息|放學|下班|自由/;
+
+/**
+ * 某一天要響的鈴。同一分鐘的多個鈴合併成一次
+ * （12:00 既是第四節結束、也是午餐開始）。
+ *
+ * 響哪一種鈴，取決於「你要進入什麼」，不是「這是開始還是結束」：
+ *   進入上課 → 上課鐘      13:20 午休結束＋第五節開始 → 上課鐘
+ *   進入休息 → 下課鐘      12:00 第四節結束＋午餐開始 → 下課鐘
+ * 所以「午餐開始」掛的是下課鐘 —— 因為那一刻你是去吃飯，不是去上課。
+ */
+function bellsFor(p, date) {
+  const map = new Map();
+  const add = (min, kind, label) => {
+    const k = String(min);
+    if (!map.has(k)) { map.set(k, { min, kind, labels: [label] }); return; }
+    const ev = map.get(k);
+    if (!ev.labels.includes(label)) ev.labels.push(label);
+    if (ev.kind === "end" && kind === "start") ev.kind = "start";   // 進入上課優先
+  };
+  for (const r of periodsFor(p, date)) {
+    if (r.bs) add(r.s, REST_SLOT.test(r.name) ? "end" : "start", r.name + "開始");
+    if (r.be) add(r.e, "end", r.name + "結束");
+  }
+  return [...map.values()].sort((a, b) => a.min - b.min);
+}
+
+/** 從 from 起算最近一個鈴；跨日、跳過週末與停課日，最多找 14 天 */
+function nextBell(p, from) {
+  const startMin = from.getHours() * 60 + from.getMinutes() + (from.getSeconds() > 0 ? 1 : 0);
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(from.getFullYear(), from.getMonth(), from.getDate() + i);
+    for (const ev of bellsFor(p, d)) {
+      if (i > 0 || ev.min >= startMin) {
+        return {
+          at: new Date(d.getFullYear(), d.getMonth(), d.getDate(), Math.floor(ev.min / 60), ev.min % 60, 0, 0),
+          ev, sameDay: i === 0
+        };
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * 從 from 往回找最近一個鈴，只找今天。找不到回 null —— 那表示今天還沒開始，
+ * 沒有「這一段從哪裡起算」，圓盤就不畫。
+ */
+function prevBell(p, from) {
+  const m = from.getHours() * 60 + from.getMinutes();
+  let best = null;
+  for (const ev of bellsFor(p, from)) {
+    if (ev.min > m) break;
+    best = ev;
+  }
+  if (!best) return null;
+  return {
+    at: new Date(from.getFullYear(), from.getMonth(), from.getDate(),
+                 Math.floor(best.min / 60), best.min % 60, 0, 0),
+    ev: best
+  };
+}
+
+function currentPeriod(p, now) {
+  const m = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+  for (const r of periodsFor(p, now)) if (r.e > r.s && m >= r.s && m < r.e) return r;
+  return null;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   5. 設定存取（含舊格式搬移）
+   ═══════════════════════════════════════════════════════════════ */
+
+const LS_KEY = "kidz-schedule.v3";
+const LS_LEGACY = ["schoolbell.v2", "schoolbell.v1"];
+
+const str = (v, max) => String(v == null ? "" : v).slice(0, max).trim();
+
+/** 清一天的時段清單。null／空陣列 = 這天不上課。 */
+function cleanDay(raw) {
+  if (!Array.isArray(raw)) return null;
+  const out = raw
+    .filter(r => r && parseHM(r.start) !== null && parseHM(r.end) !== null)
+    .map(r => period(
+      str(r.name, 20) || "時段",
+      fmtHM(parseHM(r.start)), fmtHM(parseHM(r.end)),
+      !!r.ringStart, !!r.ringEnd,
+      str(r.subject, 40), str(r.teacher, 40)
+    ))
+    .sort((a, b) => parseHM(a.start) - parseHM(b.start));
+  return out.length ? out : null;
+}
+
+function cleanProfile(raw, id, fallbackName) {
+  const base = schoolProfile(id, fallbackName);
+  if (!raw || typeof raw !== "object") return base;
+
+  const out = {
+    id: id,
+    name: str(raw.name, 20) || fallbackName || "課表",
+    labels: { primary: "科目", secondary: "老師" },
+    bells: { start: "campus", end: "campus", volume: 0.7 },
+    days: {},
+    holidays: []
+  };
+
+  if (raw.labels && typeof raw.labels === "object") {
+    out.labels.primary = str(raw.labels.primary, 6) || "科目";
+    out.labels.secondary = str(raw.labels.secondary, 6) || "老師";
+  }
+
+  if (raw.bells && typeof raw.bells === "object") {
+    if (BELLS[raw.bells.start]) out.bells.start = raw.bells.start;
+    if (BELLS[raw.bells.end]) out.bells.end = raw.bells.end;
+    const v = raw.bells.volume;
+    if (typeof v === "number" && isFinite(v)) out.bells.volume = Math.min(1, Math.max(0, v));
+  }
+
+  for (const d of DAYS) out.days[d] = cleanDay(raw.days && raw.days[d]);
+  if (!DAYS.some(d => out.days[d])) out.days = base.days;   // 全空就給預設，免得畫面一片空白
+
+  if (Array.isArray(raw.holidays)) {
+    out.holidays = raw.holidays.filter(s => /^\d{4}-\d{2}-\d{2}$/.test(String(s))).slice(0, 400);
+  }
+  return out;
+}
+
+const FORMAT_VERSION = 3;
+
+/**
+ * 版號檢查。有版號卻不檢查比沒有版號更糟 —— 餵進不相容的檔案時
+ * 會安靜地產出垃圾，而不是明確告訴使用者哪裡不對。
+ * 回傳錯誤訊息字串，或 null 表示可以讀。
+ */
+function versionError(raw) {
+  if (!raw || typeof raw !== "object") return "這不是一份設定檔。";
+  const v = raw.version;
+  if (v === undefined) return null;                    // 沒寫就當成目前版本，寬鬆處理
+  if (typeof v !== "number" || !isFinite(v)) return "設定檔的 version 欄位不是數字。";
+  if (v > FORMAT_VERSION) {
+    return "這份設定是比較新的格式（version " + v + "），這個頁面只讀到 version " +
+           FORMAT_VERSION + "。請先重新整理頁面取得最新版。";
+  }
+  if (v < FORMAT_VERSION) {
+    return "這份設定是舊格式（version " + v + "），已經不支援。請在新版重新建立課表。";
+  }
+  return null;
+}
+
+function cleanConfig(raw) {
+  const out = defaultConfig();
+  if (!raw || typeof raw !== "object") return out;
+
+  // 單一 profile 的檔案（只有 days、沒有 profiles）
+  if (!raw.profiles && raw.days) {
+    return { version: FORMAT_VERSION, appearance: out.appearance, current: "p1",
+             profiles: [cleanProfile(raw, "p1", "匯入的課表")] };
+  }
+
+  if (raw.appearance && typeof raw.appearance === "object") {
+    const a = raw.appearance;
+    if (["auto", "paper", "chalk"].includes(a.theme)) out.appearance.theme = a.theme;
+    out.appearance.bopomofo = a.bopomofo !== false;   // 沒寫就是開著（和預設一致）
+    out.appearance.kiosk = !!a.kiosk;
+    out.appearance.tick = a.tick !== false;      // 沒寫就是開著
+  }
+
+  if (Array.isArray(raw.profiles) && raw.profiles.length) {
+    const used = new Set();
+    const list = [];
+    raw.profiles.slice(0, 20).forEach((p, i) => {
+      let id = (p && /^[A-Za-z0-9_-]{1,24}$/.test(String(p.id))) ? String(p.id) : "p" + (i + 1);
+      while (used.has(id)) id += "_";
+      used.add(id);
+      list.push(cleanProfile(p, id, "課表 " + (i + 1)));
+    });
+    out.profiles = list;
+    out.current = list.some(p => p.id === raw.current) ? raw.current : list[0].id;
+  }
+  return out;
+}
+
+/* 壓縮的連結要非同步解開，而 loadConfig 必須同步回傳（cfg 在它之後才建立）。
+   所以先記下來，等頁面起來之後再套用。 */
+let pendingShare = null;
+
+function loadConfig() {
+  const h = location.hash.replace(/^#/, "");
+  if (h.startsWith("z=")) {
+    pendingShare = h.slice(2);
+    history.replaceState(null, "", location.pathname + location.search);
+  }
+  if (h.startsWith("s=")) {
+    try {
+      const raw = JSON.parse(b64ToStr(h.slice(2)));
+      const err = versionError(raw);
+      history.replaceState(null, "", location.pathname + location.search);
+      if (err) { setTimeout(() => toast(err), 400); }
+      else {
+        const c = cleanConfig(raw);
+        saveConfig(c);
+        setTimeout(() => toast("已套用連結裡的設定"), 300);
+        return c;
+      }
+    } catch (e) { /* 壞掉的連結就忽略，用本機設定 */ }
+  }
+  try {
+    const txt = localStorage.getItem(LS_KEY);
+    if (txt) {
+      const raw = JSON.parse(txt);
+      if (!versionError(raw)) return cleanConfig(raw);
+    }
+  } catch (e) {}
+  // 舊版（schoolbell.v1 / v2）的設定不再讀取，直接清掉，免得一直佔著空間
+  for (const k of LS_LEGACY) { try { localStorage.removeItem(k); } catch (e) {} }
+  return defaultConfig();
+}
+
+function saveConfig(c) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(c || cfg)); } catch (e) {}
+}
+
+/* ── 分享連結的壓縮 ──────────────────────────────────────────
+   未壓縮的整包設定約 6500 字元，聊天軟體會截斷，也塞不進 QR Code。
+   JSON 的重複性很高（每個時段都有同樣八個 key），deflate 後約 1000 字元，
+   兩個問題一次解決。
+   連結前綴：#z= 壓縮過、#s= 未壓縮（舊連結仍可用）。 */
+const CAN_ZIP = typeof CompressionStream === "function" && typeof DecompressionStream === "function";
+
+function bytesToB64(bytes) {
+  let bin = "";
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function b64ToBytes(b64) {
+  const norm = b64.replace(/-/g, "+").replace(/_/g, "/");
+  const bin = atob(norm + "=".repeat((4 - norm.length % 4) % 4));
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+async function deflateToB64(str) {
+  const cs = new CompressionStream("deflate-raw");
+  const w = cs.writable.getWriter();
+  w.write(new TextEncoder().encode(str));
+  w.close();
+  return bytesToB64(new Uint8Array(await new Response(cs.readable).arrayBuffer()));
+}
+
+async function inflateFromBytes(bytes) {
+  const ds = new DecompressionStream("deflate-raw");
+  const w = ds.writable.getWriter();
+  w.write(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes));
+  w.close();
+  return new TextDecoder().decode(await new Response(ds.readable).arrayBuffer());
+}
+
+async function inflateFromB64(b64) {
+  return inflateFromBytes(b64ToBytes(b64));
+}
+
+/**
+ * 給 QR 用的位元組。
+ *
+ * QR 不放網址，直接放壓縮後的原始位元組，理由是量出來的：
+ * 網址形式是 1012 字元 → 109 模組，而 jsQR 的解碼上限在 105 模組
+ * （版本 22），109 一定失敗，放大畫布也沒用。
+ * 拿掉網址前綴（44 字元）再改用 byte 模式避開 base64 的 33% 膨脹，
+ * 756 bytes → 93 模組，穩穩落在可解範圍內，相機也好對焦。
+ *
+ * 代價：這個 QR 不是網址，用系統相機掃不會開瀏覽器 —— 但那條路本來
+ * 就是斷的（iOS 主畫面 App 和 Safari 的 localStorage 不共用）。
+ * 要傳給別人請用「複製分享連結」，那個仍然是正常網址。
+ */
+async function buildQrBytes() {
+  return b64ToBytes(await deflateToB64(JSON.stringify(cfg)));
+}
+
+/** 產生分享網址；能壓就壓 */
+async function buildShareUrl() {
+  const base = location.origin + location.pathname + location.search;
+  const json = JSON.stringify(cfg);
+  if (CAN_ZIP) {
+    try { return base + "#z=" + await deflateToB64(json); } catch (e) {}
+  }
+  return base + "#s=" + strToB64(json);
+}
+
+function strToB64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = "";
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function b64ToStr(b64) {
+  const norm = b64.replace(/-/g, "+").replace(/_/g, "/");
+  const bin = atob(norm + "=".repeat((4 - norm.length % 4) % 4));
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   6. 狀態與畫面
+   ═══════════════════════════════════════════════════════════════ */
+
+const $ = id => document.getElementById(id);
+
+let cfg = loadConfig();
+const prof = () => cfg.profiles.find(p => p.id === cfg.current) || cfg.profiles[0];
+
+let editDayKey = "mon";      // 正在編輯星期幾
+
+let lastTickMin = null, lastTickDay = null;
+let rangMark = null;
+
+function setStateColor(el, kind) {
+  const map = {
+    class: ["--st-class", "--st-class-bg"], break: ["--st-break", "--st-break-bg"],
+    lunch: ["--st-lunch", "--st-lunch-bg"], idle: ["--st-idle", "--st-idle-bg"],
+    soon:  ["--st-soon",  "--st-soon-bg"],  timer: ["--st-timer", "--st-timer-bg"]
+  };
+  const [c, b] = map[kind] || map.idle;
+  el.style.setProperty("--state", "var(" + c + ")");
+  el.style.setProperty("--state-bg", "var(" + b + ")");
+}
+
+const periodKind = name =>
+  !name ? "idle"
+  : /午休|午餐|用餐|休息/.test(name) ? "lunch"
+  : /下課|放學|下班/.test(name) ? "break"
+  : "class";
+
+/* ═══════════════════════════════════════════════════════════════
+   臨時倒數
+   ───────────────────────────────────────────────────────────────
+   和課表無關的一次性計時：「再十分鐘就收玩具」。
+
+   存的是「結束時刻」而不是「剩幾秒」—— 這樣重新整理、切到背景再回來、
+   甚至手機把頁面丟掉重載，倒數都還在正確的位置。存剩餘秒數的話，
+   頁面沒在跑的那段時間就白白凍住了。
+   ═══════════════════════════════════════════════════════════════ */
+
+const LS_TIMER = "kidz-schedule.timer";
+const QUICK_PRESETS = [1, 3, 5, 10, 15, 20, 30];
+
+let quickTimer = null;    // { endsAt: 毫秒, totalSec: 秒 }
+
+const fmtClock = s => {
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = s % 60;
+  return h > 0
+    ? h + ":" + String(m).padStart(2, "0") + ":" + String(x).padStart(2, "0")
+    : String(m).padStart(2, "0") + ":" + String(x).padStart(2, "0");
+};
+
+const fmtLen = sec => sec % 60 === 0 ? (sec / 60) + " 分鐘" : fmtClock(sec);
+
+function loadTimer() {
+  try {
+    const t = JSON.parse(localStorage.getItem(LS_TIMER) || "null");
+    if (t && typeof t.endsAt === "number" && typeof t.totalSec === "number" && t.endsAt > Date.now()) {
+      return { endsAt: t.endsAt, totalSec: t.totalSec };
+    }
+  } catch (e) {}
+  try { localStorage.removeItem(LS_TIMER); } catch (e) {}
+  return null;
+}
+
+function saveTimer() {
+  try {
+    if (quickTimer) localStorage.setItem(LS_TIMER, JSON.stringify(quickTimer));
+    else localStorage.removeItem(LS_TIMER);
+  } catch (e) {}
+}
+
+function startTimer(sec) {
+  if (!(sec > 0)) return;
+  quickTimer = { endsAt: Date.now() + sec * 1000, totalSec: sec };
+  saveTimer();
+  renderQuick();
+  tick();
+  toast("開始倒數 " + fmtLen(sec));
+}
+
+function stopTimer(msg) {
+  quickTimer = null;
+  saveTimer();
+  renderQuick();
+  tick();
+  if (msg) toast(msg);
+}
+
+function renderQuick() {
+  const running = !!quickTimer;
+  $("quickPresets").hidden = running;
+  $("quickRunning").hidden = !running;
+  if (running) $("quickState").textContent = "倒數 " + fmtLen(quickTimer.totalSec);
+}
+
+function buildQuickPresets() {
+  const box = $("quickPresets");
+  for (const m of QUICK_PRESETS) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn btn-sm btn-quick";
+    b.textContent = m;
+    b.setAttribute("aria-label", "倒數 " + m + " 分鐘");
+    b.addEventListener("click", () => startTimer(m * 60));
+    box.appendChild(b);
+  }
+  const custom = document.createElement("button");
+  custom.type = "button";
+  custom.className = "btn btn-sm";
+  custom.textContent = "自訂";
+  custom.addEventListener("click", () => {
+    const ans = prompt("倒數幾分鐘？（可以輸入小數，例如 2.5）", "10");
+    if (ans === null) return;
+    const m = parseFloat(String(ans).trim());
+    if (!isFinite(m) || m <= 0) { toast("請輸入大於 0 的數字"); return; }
+    startTimer(Math.round(Math.min(m, 12 * 60) * 60));
+  });
+  box.appendChild(custom);
+}
+
+$("quickStop").addEventListener("click", () => stopTimer("已停止倒數"));
+$("quickPlus").addEventListener("click", () => {
+  if (!quickTimer) return;
+  quickTimer.endsAt += 60000;
+  quickTimer.totalSec += 60;
+  saveTimer(); renderQuick(); tick();
+  toast("延長 1 分鐘");
+});
+
+/* ── 剩餘時間圓盤 ──────────────────────────────────────────────
+   扇形從滿到空，滿格＝這一段（上一個鈴到下一個鈴）自己的長度。
+   每次都從牆上時間重算，不累加 —— iPad 睡著再醒來位置才會是對的。 */
+
+const SVGNS = "http://www.w3.org/2000/svg";
+const DIAL_MAX_SEC = 90 * 60;   // 比這更長的區段不畫：掃得太慢，看不出在動
+const DOTS_FROM_SEC = 10 * 60;  // 剩這麼久以內才拿出點
+const DIAL_R = 44, DIAL_C = 50;
+
+let dialTotal = null;           // 目前刻度是照哪個總長畫的
+
+/** frac 0..1，從 12 點鐘方向順時針 */
+function dialPoint(frac, r) {
+  const a = frac * Math.PI * 2;
+  return [DIAL_C + r * Math.sin(a), DIAL_C - r * Math.cos(a)];
+}
+
+/** 從 12 點順時針掃 f 圈的扇形。f=1 要退一點點，不然弧的起終點重合畫不出來。 */
+function wedgePath(f) {
+  if (f <= 0) return "";
+  if (f >= 1) f = 0.9999;
+  const [x0, y0] = dialPoint(0, DIAL_R);
+  const [x1, y1] = dialPoint(f, DIAL_R);
+  return "M " + DIAL_C + " " + DIAL_C +
+         " L " + x0.toFixed(2) + " " + y0.toFixed(2) +
+         " A " + DIAL_R + " " + DIAL_R + " 0 " + (f > 0.5 ? 1 : 0) + " 1 " +
+         x1.toFixed(2) + " " + y1.toFixed(2) + " Z";
+}
+
+/** 圓周刻度：每 5 分鐘一格；整段不到 5 分鐘就改成每分鐘一格。
+    這是唯一能看出「40 分鐘的課」和「3 分鐘的倒數」差別的地方。 */
+function buildTicks(totalSec) {
+  const g = $("dialTicks");
+  g.replaceChildren();
+  const totalMin = totalSec / 60;
+  const step = totalMin <= 5 ? 1 : 5;
+  for (let m = step; m < totalMin - 0.01; m += step) {
+    const f = m / totalMin;
+    const [xa, ya] = dialPoint(f, DIAL_R);
+    const [xb, yb] = dialPoint(f, DIAL_R - 6);
+    const l = document.createElementNS(SVGNS, "line");
+    l.setAttribute("x1", xa.toFixed(2)); l.setAttribute("y1", ya.toFixed(2));
+    l.setAttribute("x2", xb.toFixed(2)); l.setAttribute("y2", yb.toFixed(2));
+    g.append(l);
+  }
+}
+
+/** 最後十分鐘的點。剩一分鐘以內就收起來 —— 那時候剩的就是最後一格扇形本身。 */
+function renderDots(remainSec, totalSec) {
+  const el = $("nowDots");
+  const show = remainSec > 60 && remainSec <= DOTS_FROM_SEC;
+  el.hidden = !show;
+  if (!show) { el.replaceChildren(); return; }
+  const n = Math.min(10, Math.ceil(totalSec / 60));
+  const lit = Math.min(n, Math.ceil(remainSec / 60));
+  if (el.childElementCount !== n) {
+    el.replaceChildren(...Array.from({ length: n }, () => document.createElement("i")));
+  }
+  [...el.children].forEach((c, i) => c.classList.toggle("off", i >= lit));
+  el.setAttribute("aria-label", "還剩 " + lit + " 分鐘");
+}
+
+/* 把圓心的字縮到放得下為止。
+   注音會把每個字撐到將近兩倍寬，「健康與體育」照 CSS 的字級一定爆出內圈；
+   科目名長度又是使用者自己填的，沒辦法用固定字級猜。所以量一次再縮。
+   只有文字、尺寸或外觀變了才重算 —— 每秒都量會逼瀏覽器一直重新排版。 */
+let fitKey = "";
+function fitFace() {
+  const dial = $("dial"), per = $("nowPeriod"), cnt = $("nowCount");
+  if (dial.dataset.on !== "1") { per.style.fontSize = ""; fitKey = ""; return; }
+  const face = dial.querySelector(".dial-face");
+  const boxW = face.clientWidth, boxH = face.clientHeight;
+  const key = [per.textContent, Math.round(boxW), document.body.className, cnt.className].join("|");
+  if (key === fitKey) return;
+  fitKey = key;
+  per.style.fontSize = "";                       // 先回到 CSS 的字級，再往下縮
+  for (let i = 0; i < 20; i++) {
+    const w = Math.max(per.scrollWidth, cnt.scrollWidth);
+    const h = per.offsetHeight + cnt.offsetHeight + 4;
+    if (w <= boxW && h <= boxH) break;
+    const next = parseFloat(getComputedStyle(per).fontSize) * 0.9;
+    if (next < 11) break;                        // 再小就看不清楚了，寧可讓它擠出來一點
+    per.style.fontSize = next + "px";
+  }
+}
+
+/** totalSec=null 或超出範圍 → 整個圓盤收起來，版面退回原本的直排文字 */
+function renderDial(remainSec, totalSec) {
+  const d = $("dial");
+  const on = totalSec !== null && totalSec > 0 && totalSec <= DIAL_MAX_SEC &&
+             remainSec !== null && remainSec >= 0;
+  d.dataset.on = on ? "1" : "0";
+  if (!on) { dialTotal = null; $("nowDots").hidden = true; $("nowDots").replaceChildren(); return; }
+  if (dialTotal !== totalSec) { buildTicks(totalSec); dialTotal = totalSec; }
+  $("dialWedge").setAttribute("d", wedgePath(Math.min(1, remainSec / totalSec)));
+  renderDots(remainSec, totalSec);
+}
+
+/** 最後十秒把數字放大成單一數字 —— 這時候要傳達的是「準備」，不是剩多久 */
+function applyFinalCount(el, secs) {
+  const final = secs !== null && secs > 0 && secs <= 10;
+  if (final) el.textContent = String(secs);
+  el.classList.toggle("final", final);
+}
+
+function renderNow(now) {
+  const p = prof();
+  const cur = currentPeriod(p, now);
+  const nxt = nextBell(p, now);
+
+  $("today").textContent = dateKey(now) + "（" + DAY_LABEL[DAY_BY_INDEX[now.getDay()]] + "）";
+  $("nowClock").textContent = now.toLocaleTimeString("zh-TW", { hour12: false });
+
+  const card = $("nowCard"), countEl = $("nowCount");
+
+  // 臨時倒數在跑的時候接管主顯示 —— 那一刻「還剩幾分鐘」比課表重要。
+  // 課表本身照常運作：時間軸照更新，排定的鈴照響。
+  if (quickTimer) {
+    const left = Math.max(0, Math.round((quickTimer.endsAt - now.getTime()) / 1000));
+    const near = left <= 60;
+    setStateColor(card, near ? "soon" : "timer");
+    countEl.textContent = fmtClock(left);
+    countEl.classList.toggle("soon", near);
+    $("nowChip").textContent = "倒數中";
+    setText($("nowPeriod"), fmtLen(quickTimer.totalSec));
+    setText($("nowSub"), cur ? (cur.subject || cur.name) : "");   // 保留課表的脈絡
+    renderDial(left, quickTimer.totalSec);
+    applyFinalCount(countEl, left);
+    $("nowLabel").textContent = nxt
+      ? "倒數結束後回到作息　·　下一個鈴 " + fmtHM(nxt.ev.min)
+      : "倒數結束後回到作息";
+    fitFace();
+    return left;
+  }
+
+  const secs = nxt ? Math.max(0, Math.round((nxt.at - now) / 1000)) : null;
+  const soon = secs !== null && secs <= 60;
+
+  let kind = cur ? periodKind(cur.name) : "break";
+  if (!nxt) kind = "idle";
+  if (soon) kind = "soon";
+  setStateColor(card, kind);
+
+  let chip, period, sub = "";
+  if (cur) {
+    chip = /午休|午餐|用餐|休息/.test(cur.name) ? "休息中"
+         : /放學|下班/.test(cur.name) ? "結束" : "進行中";
+    period = cur.subject ? cur.subject : cur.name;
+    sub = cur.subject
+      ? cur.name + (cur.teacher ? "・" + cur.teacher : "")
+      : (cur.teacher || "");
+  } else if (dayOf(p, now)) {
+    const ps = periodsFor(p, now);
+    const m = now.getHours() * 60 + now.getMinutes();
+    if (ps.length && m < ps[0].s)                    { chip = "尚未開始"; period = "還沒上課"; }
+    else if (ps.length && m >= ps[ps.length - 1].e)  { chip = "今天結束"; period = "已放學"; }
+    else                                             { chip = "下課";     period = "下課時間"; }
+  } else {
+    chip = "今天沒安排";
+    period = (now.getDay() === 0 || now.getDay() === 6) ? "週末" : "停課日";
+  }
+  if (nxt) {
+    const h = Math.floor(secs / 3600), m2 = Math.floor((secs % 3600) / 60), s2 = secs % 60;
+    countEl.textContent = h > 0
+      ? h + ":" + String(m2).padStart(2, "0") + ":" + String(s2).padStart(2, "0")
+      : String(m2).padStart(2, "0") + ":" + String(s2).padStart(2, "0");
+    countEl.classList.toggle("soon", soon);
+    $("nowLabel").textContent = "距離　" + nxt.ev.labels.join("／") + "　" +
+      fmtHM(nxt.ev.min) + (nxt.sameDay ? "" : "（" + DAY_LABEL[DAY_BY_INDEX[nxt.at.getDay()]] + "）");
+
+    // 圓盤的一整圈＝上一個鈴到下一個鈴。今天還沒打過鈴（prev=null）、
+    // 或下一個鈴在明天，就沒有「這一段」可言，圓盤收起來。
+    const prev = nxt.sameDay ? prevBell(p, now) : null;
+    renderDial(secs, prev ? Math.round((nxt.at - prev.at) / 1000) : null);
+    applyFinalCount(countEl, secs);
+  } else {
+    countEl.textContent = "—";
+    countEl.classList.remove("soon", "final");
+    $("nowLabel").textContent = "這個課表沒有設定任何鈴聲";
+    renderDial(null, null);
+  }
+
+  $("nowChip").textContent = chip;
+  setText($("nowPeriod"), period);
+  setText($("nowSub"), sub);
+  fitFace();
+  return secs;
+}
+
+function renderTimeline(now) {
+  const el = $("timeline");
+  const p = prof();
+  const rows = periodsFor(p, now);
+
+  if (!rows.length) {
+    el.replaceChildren();
+    const d = document.createElement("p");
+    d.className = "tl-empty";
+    d.textContent = "今天沒有安排。打開下面的「編輯課表」，選今天，加幾個時段就可以了。";
+    el.appendChild(d);
+    return;
+  }
+
+  const m = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+  const frag = document.createDocumentFragment();
+
+  for (const r of rows) {
+    const div = document.createElement("div");
+    const active = r.e > r.s && m >= r.s && m < r.e;
+    div.className = "tl-row" + (active ? " active" : (m >= r.e ? " past" : ""));
+    if (active) setStateColor(div, periodKind(r.name));
+
+    const time = document.createElement("div");
+    time.className = "tl-time num";
+    time.textContent = r.s === r.e ? fmtHM(r.s) : fmtHM(r.s) + "\n" + fmtHM(r.e);
+
+    const rail = document.createElement("div");
+    rail.className = "tl-rail";
+    const dot = document.createElement("span");
+    dot.className = "tl-dot";
+    rail.appendChild(dot);
+
+    const main = document.createElement("div");
+    main.className = "tl-main";
+    const nm = document.createElement("div");
+    nm.className = "tl-name";
+    nm.appendChild(textNode(r.subject || r.name, cfg.appearance.bopomofo));
+    main.appendChild(nm);
+    const subText = r.subject ? (r.name + (r.teacher ? "・" + r.teacher : "")) : r.teacher;
+    if (subText) {
+      const sb = document.createElement("div");
+      sb.className = "tl-sub";
+      sb.appendChild(textNode(subText, cfg.appearance.bopomofo));
+      main.appendChild(sb);
+    }
+
+    const tag = document.createElement("div");
+    tag.className = "tl-tag";
+    tag.textContent = r.bs && r.be ? "頭尾響鈴" : r.bs ? "開始響鈴" : r.be ? "結束響鈴" : "不響";
+
+    div.append(time, rail, main, tag);
+
+    if (active && r.e > r.s) {
+      const prog = document.createElement("div");
+      prog.className = "tl-progress";
+      const i = document.createElement("i");
+      i.style.width = Math.min(100, Math.max(0, ((m - r.s) / (r.e - r.s)) * 100)) + "%";
+      prog.appendChild(i);
+      div.appendChild(prog);
+    }
+
+    if (rangMark && rangMark.name === r.name && Date.now() - rangMark.t < 2500) div.classList.add("rang");
+    frag.appendChild(div);
+  }
+  el.replaceChildren(frag);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   7. 心跳
+   ═══════════════════════════════════════════════════════════════ */
+
+let lastTockSec = -1;
+
+function tick() {
+  const now = new Date();
+
+  // 臨時倒數到點：先處理，這樣同一幀畫面就回到作息模式
+  if (quickTimer && now.getTime() >= quickTimer.endsAt) {
+    const total = quickTimer.totalSec;
+    quickTimer = null;
+    saveTimer();
+    renderQuick();
+    if (Audio_.armed) Audio_.play(prof().bells.end);
+    toast("⏰ " + fmtLen(total) + "到了");
+  }
+
+  const secsToBell = renderNow(now);
+  renderTimeline(now);
+  renderLoadedAt();
+
+  // 最後一分鐘的滴答，和畫面上的紅色閃爍同步。一秒一下，高低交替。
+  if (cfg.appearance.tick && Audio_.armed && secsToBell !== null && secsToBell > 0 && secsToBell <= 60) {
+    const s = now.getSeconds();
+    if (s !== lastTockSec) { lastTockSec = s; Audio_.tock(secsToBell % 2 === 0); }
+  } else {
+    lastTockSec = -1;
+  }
+
+  const today = dateKey(now);
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+
+  if (lastTickDay !== today || lastTickMin === null) {   // 換日或首次：只對齊，不補響
+    lastTickDay = today; lastTickMin = nowMin;
+    return;
+  }
+  if (nowMin === lastTickMin) return;
+
+  const due = bellsFor(prof(), now).filter(ev => ev.min > lastTickMin && ev.min <= nowMin);
+  lastTickMin = nowMin;
+  if (!due.length) return;
+
+  // 睡眠／切背景回來可能一次補上好幾個 —— 只響最後一個，而且要夠新。
+  // 一口氣連放三次鐘比沒響更糟。
+  const ev = due[due.length - 1];
+  if (nowMin - ev.min > 2) return;
+  ring(ev);
+}
+
+function ring(ev) {
+  const p = prof();
+  const key = ev.kind === "start" ? p.bells.start : p.bells.end;
+  rangMark = { name: ev.labels[0].replace(/(開始|結束)$/, ""), t: Date.now() };
+  if (Audio_.armed) Audio_.play(key);
+  toast("🔔 " + ev.labels.join("／"));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   8. 螢幕保持開啟
+   ═══════════════════════════════════════════════════════════════ */
+
+let wakeSentinel = null;
+
+/* 這個狀態沒有 checkbox 可以存 —— 螢幕開關已經是卡片右上角的 ☀，
+   而那顆是 aria-pressed，不是表單控制項。所以狀態放這裡。
+   預設開著：這一頁的用途就是擺著讓它走，螢幕鎖掉就沒意義了。 */
+let wakeWanted = true;
+
+/** announce=true 時把結果用 toast 說出來。原本寫在 ☰ 裡的說明文字已經拿掉了
+    （看板模式下本來就看不到），「按了完全沒反應」是最難懂的失敗方式，所以改用 toast。
+    啟動時呼叫不帶這個參數，免得一開頁就跳訊息。 */
+async function updateWakeLock(announce) {
+  const say = m => { if (announce) toast(m); };
+  if (!("wakeLock" in navigator)) {
+    say("這個瀏覽器不支援，請用系統的「自動鎖定 → 永不」");
+    return;
+  }
+  if (!wakeWanted) {
+    if (wakeSentinel) { try { await wakeSentinel.release(); } catch (e) {} wakeSentinel = null; }
+    say("螢幕會照系統設定鎖定");
+    return;
+  }
+  if (wakeSentinel) { say("螢幕不會自動關掉"); return; }
+  try {
+    wakeSentinel = await navigator.wakeLock.request("screen");
+    wakeSentinel.addEventListener("release", () => { wakeSentinel = null; });
+    say("螢幕不會自動關掉");
+  } catch (e) {
+    say("鎖不住螢幕，請改用系統的「自動鎖定 → 永不」");
+  }
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") { updateWakeLock(); tick(); }
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   9. 介面
+   ═══════════════════════════════════════════════════════════════ */
+
+let toastTimer = null;
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+function applyAppearance() {
+  document.documentElement.setAttribute("data-skin", cfg.appearance.theme);
+  document.body.classList.toggle("bpmf-on", cfg.appearance.bopomofo);
+  document.body.classList.toggle("kiosk", cfg.appearance.kiosk);
+  if (cfg.appearance.kiosk) setMenu(false);   // 抽屜是覆蓋層，看板模式下一定要關掉
+  document.documentElement.style.setProperty("--scale", cfg.appearance.kiosk ? "1.5" : "1");
+  $("tock").checked = cfg.appearance.tick;
+  for (const b of $("skinSeg").children) {
+    b.setAttribute("aria-pressed", String(b.dataset.skin === cfg.appearance.theme));
+  }
+  syncToggles();          /* 從 ☰ 或匯入改的時候，右上角那排也要跟著動 */
+}
+
+/** 贊助連結：網址沒填就整個不顯示。只接受 https，避免貼錯變成可執行的連結。 */
+function renderDonate() {
+  const el = $("donate");
+  if (!el) return;
+  el.replaceChildren();
+  const u = String(DONATE.url || "").trim();
+  if (!/^https:\/\/[^\s"'<>]+$/i.test(u)) return;
+  const a = document.createElement("a");
+  a.className = "donate";
+  a.href = u;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  a.textContent = DONATE.文字 || "贊助";
+  el.append(document.createElement("br"), a);
+}
+
+function renderProfPick() {
+  const s = $("profPick");
+  s.replaceChildren();
+  for (const p of cfg.profiles) {
+    const o = document.createElement("option");
+    o.value = p.id; o.textContent = p.name;
+    if (p.id === cfg.current) o.selected = true;
+    s.appendChild(o);
+  }
+}
+
+function fillBellSelects() {
+  const p = prof();
+  for (const [sel, cur] of [["selBellStart", p.bells.start], ["selBellEnd", p.bells.end]]) {
+    const s = $(sel);
+    s.replaceChildren();
+    for (const [k, v] of Object.entries(BELLS)) {
+      const o = document.createElement("option");
+      o.value = k; o.textContent = v.label;
+      if (k === cur) o.selected = true;
+      s.appendChild(o);
+    }
+  }
+  $("vol").value = Math.round(p.bells.volume * 100);
+  $("volVal").textContent = Math.round(p.bells.volume * 100) + "%";
+  Audio_.setVolume(p.bells.volume);
+}
+
+/* ── 編輯課表 ──
+   一天一張表：時間和科目在同一列，沒有跨表對應。
+   「幾天共用同一套時間」用複製達成 —— 複製是你主動按的，
+   不像共用骨架那樣不問你就連動。 */
+
+function commit() { saveConfig(); tick(); }
+
+function commitSorted() {
+  const list = prof().days[editDayKey];
+  if (list) list.sort((a, b) => (parseHM(a.start) ?? 0) - (parseHM(b.start) ?? 0));
+  commit();
+  renderDayTable();
+}
+
+function renderDayTabs() {
+  const p = prof(), box = $("dayTabs");
+  box.replaceChildren();
+  for (const d of DAYS) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "tab" + (p.days[d] ? "" : " off");
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-selected", String(d === editDayKey));
+    b.setAttribute("aria-label", "星期" + DAY_LABEL[d]);
+    b.textContent = DAY_LABEL[d];
+    b.addEventListener("click", () => { editDayKey = d; renderDayTabs(); renderDayTable(); });
+    box.appendChild(b);
+  }
+}
+
+function renderDayTable() {
+  const p = prof(), body = $("dayBody");
+  $("thPrimary").textContent = p.labels.primary;
+  $("thSecondary").textContent = p.labels.secondary;
+  body.replaceChildren();
+
+  const list = p.days[editDayKey];
+  const label = "星期" + DAY_LABEL[editDayKey];
+
+  if (!list || !list.length) {
+    $("dayHint").textContent = label + "目前不上課。按「＋ 加一個時段」開始排，" +
+      "或先到別天排好再用「複製整天到…」搬過來。";
+    return;
+  }
+  $("dayHint").textContent = label + "有 " + list.length + " 個時段。" +
+    "每一天的時間各自獨立 —— 要讓幾天一樣，用下面的複製。";
+
+  list.forEach((r, idx) => {
+    const tr = document.createElement("tr");
+    const mk = (type, val, key) => {
+      const i = document.createElement("input");
+      i.type = type;
+      i.id = "d-" + editDayKey + "-" + idx + "-" + key;
+      if (type === "checkbox") i.checked = !!val; else i.value = val;
+      return i;
+    };
+
+    const tdName = document.createElement("td");
+    const inName = mk("text", r.name, "name");
+    inName.setAttribute("aria-label", "時段名稱");
+    inName.maxLength = 20;
+    inName.addEventListener("change", e => {
+      r.name = e.target.value.slice(0, 20).trim() || "時段";
+      e.target.value = r.name;
+      commit();
+    });
+    tdName.appendChild(inName);
+
+    const tdStart = document.createElement("td");
+    const inStart = mk("time", r.start, "start");
+    inStart.setAttribute("aria-label", r.name + " 開始時間");
+    inStart.addEventListener("change", e => {
+      if (parseHM(e.target.value) === null) { e.target.value = r.start; return; }
+      r.start = e.target.value; commitSorted();
+    });
+    tdStart.appendChild(inStart);
+
+    const tdEnd = document.createElement("td");
+    const inEnd = mk("time", r.end, "end");
+    inEnd.setAttribute("aria-label", r.name + " 結束時間");
+    inEnd.addEventListener("change", e => {
+      if (parseHM(e.target.value) === null) { e.target.value = r.end; return; }
+      r.end = e.target.value; commitSorted();
+    });
+    tdEnd.appendChild(inEnd);
+
+    const mkText = (key, labelText) => {
+      const td = document.createElement("td");
+      const i = mk("text", r[key], key);
+      i.maxLength = 40;
+      i.setAttribute("aria-label", r.name + " " + labelText);
+      i.addEventListener("change", e => { r[key] = e.target.value.slice(0, 40); commit(); });
+      td.appendChild(i);
+      return td;
+    };
+
+    const tdRs = document.createElement("td");
+    tdRs.className = "chk";
+    const cbS = mk("checkbox", r.ringStart, "rs");
+    cbS.setAttribute("aria-label", r.name + " 開始時響鈴");
+    cbS.addEventListener("change", e => { r.ringStart = e.target.checked; commit(); });
+    tdRs.appendChild(cbS);
+
+    const tdRe = document.createElement("td");
+    tdRe.className = "chk";
+    const cbE = mk("checkbox", r.ringEnd, "re");
+    cbE.setAttribute("aria-label", r.name + " 結束時響鈴");
+    cbE.addEventListener("change", e => { r.ringEnd = e.target.checked; commit(); });
+    tdRe.appendChild(cbE);
+
+    const tdDel = document.createElement("td");
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "row-del";
+    del.textContent = "×";
+    del.title = "刪掉這個時段";
+    del.setAttribute("aria-label", "刪掉「" + r.name + "」");
+    del.addEventListener("click", () => {
+      list.splice(idx, 1);
+      if (!list.length) p.days[editDayKey] = null;
+      commit(); renderDayTabs(); renderDayTable();
+    });
+    tdDel.appendChild(del);
+
+    tr.append(tdName, tdStart, tdEnd,
+              mkText("subject", p.labels.primary), mkText("teacher", p.labels.secondary),
+              tdRs, tdRe, tdDel);
+    body.appendChild(tr);
+  });
+}
+
+$("addSlot").addEventListener("click", () => {
+  const p = prof();
+  if (!p.days[editDayKey]) p.days[editDayKey] = [];
+  const list = p.days[editDayKey];
+  const last = list[list.length - 1];
+  const base = last ? Math.min(23 * 60 + 50, (parseHM(last.end) ?? 480) + 10) : 8 * 60;
+  list.push(period("新時段", fmtHM(base), fmtHM(Math.min(23 * 60 + 59, base + 40)), true, true));
+  commitSorted();
+  renderDayTabs();
+});
+
+$("clearDay").addEventListener("click", () => {
+  const p = prof();
+  if (!p.days[editDayKey]) { toast("這天本來就沒有安排"); return; }
+  if (!confirm("把星期" + DAY_LABEL[editDayKey] + "整天清空？")) return;
+  p.days[editDayKey] = null;
+  commit(); renderDayTabs(); renderDayTable();
+});
+
+/** 讓使用者勾選要複製到哪幾天 */
+function pickDays(title) {
+  const others = DAYS.filter(d => d !== editDayKey);
+  const prompt_ = title + "\n\n輸入要複製到哪幾天（可多選，用空白或逗號分開）：\n" +
+    others.map(d => DAY_LABEL[d]).join("  ") + "\n\n例如輸入：三 四 五";
+  const ans = prompt(prompt_, "");
+  if (ans === null) return null;
+  const wanted = new Set(ans.split(/[\s,，、]+/).filter(Boolean));
+  const targets = others.filter(d => wanted.has(DAY_LABEL[d]) || wanted.has("星期" + DAY_LABEL[d]));
+  if (!targets.length) { toast("沒有認出任何一天，沒有複製"); return null; }
+  return targets;
+}
+
+$("copyDayAll").addEventListener("click", () => {
+  const p = prof();
+  const src = p.days[editDayKey];
+  if (!src || !src.length) { toast("這天沒有東西可以複製"); return; }
+  const targets = pickDays("把星期" + DAY_LABEL[editDayKey] + "整天（時間＋" +
+                           p.labels.primary + "）複製過去，會覆蓋掉那幾天原本的內容。");
+  if (!targets) return;
+  for (const d of targets) p.days[d] = JSON.parse(JSON.stringify(src));
+  commit(); renderDayTabs(); renderDayTable();
+  toast("已複製到 " + targets.map(d => "星期" + DAY_LABEL[d]).join("、"));
+});
+
+$("copyDayTimes").addEventListener("click", () => {
+  const p = prof();
+  const src = p.days[editDayKey];
+  if (!src || !src.length) { toast("這天沒有東西可以複製"); return; }
+  const targets = pickDays("只把星期" + DAY_LABEL[editDayKey] + "的時間與響鈴設定複製過去，" +
+                           "那幾天原本的" + p.labels.primary + "會盡量保留（依時段名稱對應）。");
+  if (!targets) return;
+
+  for (const d of targets) {
+    const oldList = p.days[d] || [];
+    // 依時段名稱把原本的科目搬過來；對不到就留空
+    const keep = new Map();
+    for (const r of oldList) if (r.subject || r.teacher) keep.set(r.name, r);
+    p.days[d] = src.map(r => {
+      const k = keep.get(r.name);
+      return period(r.name, r.start, r.end, r.ringStart, r.ringEnd,
+                    k ? k.subject : "", k ? k.teacher : "");
+    });
+  }
+  commit(); renderDayTabs(); renderDayTable();
+  toast("時間已複製到 " + targets.map(d => "星期" + DAY_LABEL[d]).join("、"));
+});
+/* ── 課表管理 ── */
+
+function renderProfFields() {
+  const p = prof();
+  $("profName").value = p.name;
+  $("fldMain").value = p.labels.primary;
+  $("fldSecond").value = p.labels.secondary;
+}
+
+$("profName").addEventListener("change", e => {
+  prof().name = e.target.value.slice(0, 20).trim() || "課表";
+  e.target.value = prof().name;
+  commit(); renderProfPick();
+});
+$("fldMain").addEventListener("change", e => {
+  prof().labels.primary = e.target.value.slice(0, 6).trim() || "科目";
+  e.target.value = prof().labels.primary;
+  commit(); renderDayTable();
+});
+$("fldSecond").addEventListener("change", e => {
+  prof().labels.secondary = e.target.value.slice(0, 6).trim() || "老師";
+  e.target.value = prof().labels.secondary;
+  commit(); renderDayTable();
+});
+
+function newProfId() {
+  let i = 1;
+  while (cfg.profiles.some(p => p.id === "p" + i)) i++;
+  return "p" + i;
+}
+
+function addProfile(p) {
+  p.id = newProfId();
+  cfg.profiles.push(p);
+  cfg.current = p.id;
+  editDayKey = "mon";
+  saveConfig();
+  refreshAll();
+  toast("已新增「" + p.name + "」");
+}
+
+$("profAdd").addEventListener("click", () => {
+  const name = (prompt("新課表的名稱？（例如小孩的名字）", "新課表") || "").trim().slice(0, 20);
+  if (!name) return;
+  addProfile(schoolProfile("tmp", name));
+});
+
+$("profDup").addEventListener("click", () => {
+  const copy = cleanProfile(JSON.parse(JSON.stringify(prof())), "tmp", prof().name);
+  const name = (prompt("複製一份，叫什麼名字？", copy.name + " 副本") || "").trim().slice(0, 20);
+  if (!name) return;
+  copy.name = name;
+  addProfile(copy);
+});
+
+$("profWork").addEventListener("click", () => addProfile(workProfile("tmp")));
+
+$("profDel").addEventListener("click", () => {
+  if (cfg.profiles.length <= 1) { toast("至少要留一個課表"); return; }
+  if (!confirm("刪掉「" + prof().name + "」？這個動作沒辦法復原。")) return;
+  const i = cfg.profiles.findIndex(p => p.id === cfg.current);
+  cfg.profiles.splice(i, 1);
+  cfg.current = cfg.profiles[Math.min(i, cfg.profiles.length - 1)].id;
+  editDayKey = "mon";
+  saveConfig(); refreshAll();
+  toast("已刪除");
+});
+
+/** 上下移動 —— 順序是使用者在意的資料，所以 profiles 用 array 而不是 dict */
+function moveProfile(delta) {
+  const i = cfg.profiles.findIndex(p => p.id === cfg.current);
+  const j = i + delta;
+  if (i < 0 || j < 0 || j >= cfg.profiles.length) { toast("已經在最" + (delta < 0 ? "前" : "後") + "面了"); return; }
+  const [me] = cfg.profiles.splice(i, 1);
+  cfg.profiles.splice(j, 0, me);
+  saveConfig(); renderProfPick();
+  toast("已移到第 " + (j + 1) + " 個");
+}
+$("profUp").addEventListener("click", () => moveProfile(-1));
+$("profDown").addEventListener("click", () => moveProfile(1));
+
+$("profPick").addEventListener("change", e => {
+  if (!cfg.profiles.some(p => p.id === e.target.value)) return;
+  cfg.current = e.target.value;
+  editDayKey = "mon";
+  saveConfig(); refreshAll();
+});
+
+/* ── 鈴聲 / 外觀控制 ── */
+
+/* 開關鈴聲。入口只有右上角那顆 ♫ —— 原本時間軸上面還有一顆大的「開啟鈴聲」，
+   但它講的是同一件事，留著就是第二個要同步的地方。
+
+   瀏覽器規定要有使用者手勢才准出聲；按 ♫ 本身就是那個手勢，所以沒有問題。
+   代價是那段「為什麼要先按一下」的說明沒地方放了 —— 改成第一次載入時用 toast
+   講一次（見最下面的啟動提示）。 */
+async function toggleBell() {
+  if (Audio_.armed) {
+    Audio_.stopAll();
+    Audio_.armed = false;
+    syncToggles();
+    toast("鈴聲關閉，時間還是照走");
+    return;
+  }
+  if (!await Audio_.arm()) { toast("這個瀏覽器擋住了聲音，再按一次試試"); return; }
+  Audio_.setVolume(prof().bells.volume);
+  updateWakeLock();
+  syncToggles();
+  toast("鈴聲開啟，時間到會自動打鐘");
+}
+
+$("stopBtn").addEventListener("click", () => { Audio_.stopAll(); toast("已停止"); });
+
+document.querySelectorAll("[data-try]").forEach(b => {
+  b.addEventListener("click", async () => {
+    await Audio_.arm();
+    Audio_.setVolume(prof().bells.volume);
+    Audio_.stopAll();
+    const key = b.dataset.try === "start" ? prof().bells.start : prof().bells.end;
+    if (key === "none") { toast("這個選項是靜音"); return; }
+    Audio_.play(key);
+  });
+});
+
+$("selBellStart").addEventListener("change", e => { prof().bells.start = e.target.value; saveConfig(); });
+$("selBellEnd").addEventListener("change", e => { prof().bells.end = e.target.value; saveConfig(); });
+
+$("vol").addEventListener("input", e => {
+  prof().bells.volume = e.target.value / 100;
+  $("volVal").textContent = e.target.value + "%";
+  Audio_.setVolume(prof().bells.volume);
+});
+$("vol").addEventListener("change", () => saveConfig());
+
+$("skinSeg").addEventListener("click", e => {
+  const b = e.target.closest("button[data-skin]");
+  if (!b) return;
+  cfg.appearance.theme = b.dataset.skin;
+  saveConfig(); applyAppearance();
+});
+
+$("tock").addEventListener("change", e => {
+  cfg.appearance.tick = e.target.checked;
+  saveConfig();
+  if (!e.target.checked) { toast("滴答聲關閉"); return; }
+  // 沒開鈴聲的話 Audio_.tock() 會直接靜默 return —— 按了完全沒反應最難懂，
+  // 所以在這裡講清楚，不要讓人以為壞掉。
+  if (!Audio_.armed) { toast("先開右上角的 ♫ 鈴聲，滴答才會出聲"); return; }
+  // 試聽放兩下（滴—答）。間隔拉到 500ms 才像時鐘 —— 原本 260ms 太快，
+  // 聽起來像連擊，跟真正一秒一下的節奏對不起來。
+  Audio_.tock(true);
+  setTimeout(() => Audio_.tock(false), 500);
+  toast("最後一分鐘會像這樣一秒一下");
+});
+
+$("kioskExit").addEventListener("click", () => {
+  cfg.appearance.kiosk = false;
+  saveConfig(); applyAppearance();
+});
+
+/* ── 設定抽屜 ── */
+/** open=true 開啟。moveFocus 只有使用者自己按的時候才給 true ——
+ *  啟動時 applyAppearance 也會呼叫這個函式，那時候搶焦點會很奇怪。 */
+function setMenu(open, moveFocus) {
+  const was = !$("menuSheet").hidden;
+  $("menuSheet").hidden = !open;
+  $("menuBtn").setAttribute("aria-expanded", String(!!open));
+  document.body.classList.toggle("sheet-open", !!open);
+  // 焦點不能留在已經看不見的東西上面（看板模式會直接關掉抽屜）
+  if (!open && was && $("menuSheet").contains(document.activeElement)) {
+    document.activeElement.blur();          // 看板模式下漢堡鈕自己也隱藏了，不能收焦點
+    if (moveFocus) $("menuBtn").focus();
+    return;
+  }
+  if (!moveFocus || was === !!open) return;
+  if (open) { $("menuSheet").querySelector(".sheet-body").scrollTop = 0; $("menuClose").focus(); }
+  else { $("menuBtn").focus(); }
+}
+
+$("menuBtn").addEventListener("click", () => setMenu($("menuSheet").hidden, true));
+$("menuClose").addEventListener("click", () => setMenu(false, true));
+
+// Esc 關閉 —— 鍵盤使用者（和外接鍵盤的平板）預期這樣
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("menuSheet").hidden) setMenu(false, true);
+});
+
+/* ── 卡片右上角的快速開關 ──────────────────────────────────────
+   這裡是這幾個狀態唯一的入口。原本 ☰ 裡還有一組 checkbox，按鈕只是去翻它們；
+   但同一個狀態開兩個入口，遲早會有一邊忘了同步，所以那組已經拿掉了。
+
+   三種狀態存在三個不同的地方，因為它們本來就是三種東西：
+     注音／看板 → cfg.appearance（要存檔、要跟著課表匯出）
+     螢幕       → wakeWanted（只對這台裝置這一次有意義，不進設定檔）
+     鈴聲       → Audio_.armed（瀏覽器准不准出聲，不是我們說了算） */
+const QUICK_TOGGLES = [
+  {
+    btn: "tglBpmf",
+    get: () => cfg.appearance.bopomofo,
+    set: v => { cfg.appearance.bopomofo = v; saveConfig(); applyAppearance(); tick(); }
+  },
+  {
+    btn: "tglWake",
+    get: () => wakeWanted,
+    set: v => { wakeWanted = v; updateWakeLock(true); }
+  },
+  {
+    btn: "tglKiosk",
+    get: () => cfg.appearance.kiosk,
+    set: v => { cfg.appearance.kiosk = v; saveConfig(); applyAppearance(); }
+  }
+];
+
+function syncToggles() {
+  for (const t of QUICK_TOGGLES) {
+    $(t.btn).setAttribute("aria-pressed", String(!!t.get()));
+  }
+  $("tglBell").setAttribute("aria-pressed", String(!!Audio_.armed));
+}
+
+/* 按小的等於按大的 —— arm/disarm 的邏輯（含瀏覽器擋住時的提示）只有一份 */
+$("tglBell").addEventListener("click", toggleBell);
+
+for (const t of QUICK_TOGGLES) {
+  $(t.btn).addEventListener("click", () => {
+    t.set(!t.get());
+    syncToggles();     // set() 裡若已經呼叫 applyAppearance 會重複一次，無妨且便宜
+  });
+}
+
+/* ── 重新載入 ──────────────────────────────────────────────────
+   iOS 主畫面的 App 沒有網址列，看板模式連 ☰ 都沒有。而這一頁會在
+   平板上連開好幾天 —— 推了新版它自己不會知道。所以左上角自己長一顆 ↻。
+
+   帶時間戳是為了繞過快取：普通的 reload 可能還是拿到同一份舊的。
+   載入後那個參數會被清掉，免得跟著跑進分享連結裡。 */
+const LOADED_AT = new Date();
+
+function renderLoadedAt() {
+  const mins = Math.floor((Date.now() - LOADED_AT.getTime()) / 60000);
+  const when = LOADED_AT.toLocaleString("zh-TW", {
+    month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false
+  });
+  let age;
+  if (mins < 1) age = "剛剛";
+  else if (mins < 60) age = "已開著 " + mins + " 分鐘";
+  else if (mins < 60 * 24) age = "已開著 " + Math.floor(mins / 60) + " 小時";
+  else age = "已開著 " + Math.floor(mins / 1440) + " 天";
+  $("loadedAt").textContent = when + " 載入・" + age;
+}
+
+$("reloadBtn").addEventListener("click", () => {
+  const u = new URL(location.href);
+  u.searchParams.set("r", Date.now().toString(36));
+  u.hash = "";
+  location.replace(u.toString());
+});
+
+/* ── 搬移備份 ── */
+
+$("exportBtn").addEventListener("click", () => {
+  $("ioBox").value = JSON.stringify(cfg, null, 2);
+  toast("已匯出全部設定");
+});
+
+$("exportOne").addEventListener("click", () => {
+  $("ioBox").value = JSON.stringify(prof(), null, 2);
+  toast("已匯出「" + prof().name + "」");
+});
+
+/**
+ * 把一段文字變成設定。接受三種東西，因為使用者手上可能是其中任何一種：
+ *   1. 完整的分享網址（…/#z=… 或 …/#s=…）
+ *   2. 只有 hash 那一段
+ *   3. 原始 JSON
+ *
+ * 為什麼要吃網址：iOS 主畫面的 web app 有自己獨立的 localStorage，
+ * 和 Safari 不共用。用相機掃 QR 只會把設定套用到 Safari，主畫面那個
+ * App 讀不到。所以必須有辦法在 App 內部貼上連結，才走得通。
+ */
+async function parseImportText(text) {
+  const t = String(text || "").trim();
+  if (!t) throw new Error("empty");
+
+  const m = t.match(/#(z|s)=([A-Za-z0-9_\-+/=]+)/);
+  if (m) {
+    const payload = m[2];
+    return JSON.parse(m[1] === "z" ? await inflateFromB64(payload) : b64ToStr(payload));
+  }
+  return JSON.parse(t);
+}
+
+async function applyImport(text, source) {
+  let parsed;
+  try { parsed = await parseImportText(text); }
+  catch (e) {
+    toast(String(text || "").trim()
+      ? "認不出這段內容 —— 可以貼分享連結，或整段 JSON。"
+      : "沒有東西可以匯入。");
+    return;
+  }
+  const err = versionError(parsed);
+  if (err) { toast(err); return; }
+
+  if (parsed && Array.isArray(parsed.profiles)) {
+    cfg = cleanConfig(parsed);
+    editDayKey = "mon";
+    saveConfig(); refreshAll();
+    toast("已取代全部設定（" + cfg.profiles.length + " 個課表）" + (source ? "・" + source : ""));
+  } else if (parsed && parsed.days) {
+    addProfile(cleanProfile(parsed, "tmp", "匯入的課表"));
+  } else {
+    toast("認不出這份設定 —— 它需要有 profiles（整包）或 days（單一課表）。");
+  }
+}
+
+/* ── 掃描 QR ──────────────────────────────────────────────────
+   iOS 主畫面 web app 的 localStorage 和 Safari 隔離，所以用系統相機掃
+   只會套用到 Safari；要在 App 內部掃才進得了它自己的儲存空間。
+
+   iOS 的 standalone 相機有已知問題：權限不會被記住（每次重問）、某些
+   iOS 版本會整個失效。所以這條路一定要能優雅失敗 —— 失敗就導向
+   「貼上連結」，那條路不靠相機。
+
+   函式庫只在按下按鈕時才載入，平常仍是零相依、離線可用。 */
+/* 用 jsQR：純函式，餵它像素就回傳結果。沒有 worker、沒有引擎初始化，
+   所以不會踩到「函式庫想用相對路徑載自己的 worker」那類 CDN 問題。
+   相機迴圈自己寫，行為完全可控。 */
+const QR_LIB = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";
+
+let scanStream = null, scanRAF = null, scanLibLoading = null;
+
+function loadScanLib() {
+  if (window.jsQR) return Promise.resolve();
+  if (scanLibLoading) return scanLibLoading;
+  scanLibLoading = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = QR_LIB;
+    s.onload = resolve;
+    s.onerror = () => { scanLibLoading = null; reject(new Error("load")); };
+    document.head.appendChild(s);
+  });
+  return scanLibLoading;
+}
+
+function stopScan() {
+  if (scanRAF) { cancelAnimationFrame(scanRAF); scanRAF = null; }
+  if (scanStream) {
+    // 每一條 track 都要 stop，否則相機指示燈會一直亮著
+    for (const t of scanStream.getTracks()) { try { t.stop(); } catch (e) {} }
+    scanStream = null;
+  }
+  const v = $("scanVideo");
+  try { v.pause(); v.srcObject = null; } catch (e) {}
+  $("scanBox").hidden = true;
+  $("scanBtn").textContent = "掃描 QR";
+}
+
+$("scanStop").addEventListener("click", stopScan);
+
+$("scanBtn").addEventListener("click", async () => {
+  if (scanStream) { stopScan(); return; }
+
+  const hint = $("scanHint"), video = $("scanVideo");
+  $("scanBox").hidden = false;
+  $("scanBtn").textContent = "關閉掃描";
+  hint.textContent = "正在載入掃描器…";
+
+  try { await loadScanLib(); }
+  catch (e) {
+    hint.textContent = "掃描器載不下來（需要連網）。改用「貼上連結／設定」—— 那個不需要相機。";
+    return;
+  }
+
+  hint.textContent = "正在開啟相機…";
+  try {
+    scanStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" }, audio: false
+    });
+    video.srcObject = scanStream;
+    await video.play();
+  } catch (e) {
+    const m = String((e && e.name) || (e && e.message) || e);
+    stopScan();
+    $("scanBox").hidden = false;
+    $("scanBtn").textContent = "關閉掃描";
+    hint.textContent = /NotAllowed|Denied|Permission/i.test(m)
+      ? "相機權限被拒絕。iOS 的主畫面 App 不會記住這個權限，再按一次可以重試；或改用「貼上連結／設定」。"
+      : "打不開相機（" + m + "）。改用「貼上連結／設定」—— 那個不需要相機。";
+    return;
+  }
+
+  hint.textContent = "把相機對準電腦螢幕上的 QR。";
+  const cv = document.createElement("canvas");
+  const g = cv.getContext("2d", { willReadFrequently: true });
+
+  const tick = () => {
+    if (!scanStream) return;
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      // 縮到最長邊 640，夠解又不會每格都吃掉整個 CPU
+      const scale = Math.min(1, 640 / Math.max(video.videoWidth, video.videoHeight));
+      cv.width = Math.round(video.videoWidth * scale);
+      cv.height = Math.round(video.videoHeight * scale);
+      if (cv.width && cv.height) {
+        g.drawImage(video, 0, 0, cv.width, cv.height);
+        const img = g.getImageData(0, 0, cv.width, cv.height);
+        const hit = window.jsQR(img.data, img.width, img.height, { inversionAttempts: "dontInvert" });
+        if (hit) {
+          stopScan();
+          // 本 App 產生的 QR 裝的是壓縮後的原始位元組（見 buildQrBytes）；
+          // 別處來的 QR 可能是網址或文字，兩種都接。
+          if (hit.binaryData && hit.binaryData.length) {
+            inflateFromBytes(new Uint8Array(hit.binaryData))
+              .then(json => applyImport(json, "來自 QR"))
+              .catch(() => applyImport(hit.data || "", "來自 QR"));
+          } else {
+            applyImport(hit.data || "", "來自 QR");
+          }
+          return;
+        }
+      }
+    }
+    scanRAF = requestAnimationFrame(tick);
+  };
+  scanRAF = requestAnimationFrame(tick);
+});
+
+// 切到背景就關相機，不然指示燈會一直亮著
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible" && scanStream) stopScan();
+});
+
+$("pasteBtn").addEventListener("click", async () => {
+  if (!navigator.clipboard || !navigator.clipboard.readText) {
+    toast("這個瀏覽器不給直接讀剪貼簿，請貼到下面的框裡再按「匯入」。");
+    $("io").open = true;
+    $("ioBox").focus();
+    return;
+  }
+  let text;
+  try { text = await navigator.clipboard.readText(); }
+  catch (e) {
+    toast("讀不到剪貼簿（可能被拒絕了），請貼到下面的框裡再按「匯入」。");
+    $("io").open = true;
+    $("ioBox").focus();
+    return;
+  }
+  await applyImport(text, "來自剪貼簿");
+});
+
+$("importBtn").addEventListener("click", () => {
+  const txt = $("ioBox").value.trim();
+  if (!txt) { toast("先把連結或 JSON 貼到框裡"); return; }
+  let parsed;
+  try { parsed = JSON.parse(txt); }
+  catch (e) { applyImport(txt); return; }
+
+  const err = versionError(parsed);
+  if (err) { toast(err); return; }
+
+  if (parsed && Array.isArray(parsed.profiles)) {
+    cfg = cleanConfig(parsed);
+    editDayKey = "mon";
+    saveConfig(); refreshAll();
+    toast("已取代全部設定（" + cfg.profiles.length + " 個課表）");
+  } else if (parsed && parsed.days) {
+    addProfile(cleanProfile(parsed, "tmp", "匯入的課表"));
+  } else {
+    toast("認不出這份 JSON —— 它需要有 profiles（整包）或 days（單一課表）。");
+  }
+});
+
+$("shareBtn").addEventListener("click", async () => {
+  const url = await buildShareUrl();
+  try {
+    await navigator.clipboard.writeText(url);
+    toast(url.length > 3000
+      ? "連結已複製，但很長（" + url.length + " 字元），聊天軟體可能會截斷"
+      : "連結已複製（" + url.length + " 字元），對方點開就是同一套設定");
+  } catch (e) {
+    $("ioBox").value = url;
+    $("io").open = true;
+    toast("沒辦法自動複製，連結放在下面的框裡了");
+  }
+});
+
+/* QR：給「電腦上設定好、手機／平板要拿到」的情境。
+   相機掃一下就開，不用傳檔也不用複製貼上。
+   產生器只在按下按鈕時才載入，所以平常仍是零相依、離線可用。 */
+let qrLibLoading = null;
+function loadQrLib() {
+  if (window.qrcode) return Promise.resolve();
+  if (qrLibLoading) return qrLibLoading;
+  qrLibLoading = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js";
+    s.onload = resolve;
+    s.onerror = () => reject(new Error("load failed"));
+    document.head.appendChild(s);
+  });
+  return qrLibLoading;
+}
+
+$("qrBtn").addEventListener("click", async () => {
+  const box = $("qrBox");
+  if (box.dataset.shown === "1") {
+    box.replaceChildren();
+    box.dataset.shown = "0";
+    $("qrBtn").textContent = "顯示 QR Code";
+    return;
+  }
+  box.replaceChildren(Object.assign(document.createElement("p"),
+    { className: "hint", textContent: "產生中…" }));
+  try {
+    await loadQrLib();
+    const bytes = await buildQrBytes();
+    let bin = "";
+    for (const b of bytes) bin += String.fromCharCode(b);
+    const qr = window.qrcode(0, "L");          // 0 = 自動選容量，L = 最低容錯換最大容量
+    qr.addData(bin, "Byte");                   // 原始位元組，不是網址 —— 見 buildQrBytes 的說明
+    qr.make();
+    box.replaceChildren();
+    const wrap = document.createElement("div");
+    wrap.className = "qr";
+    wrap.innerHTML = qr.createSvgTag({ cellSize: 3, margin: 2, scalable: true });
+    const cap = document.createElement("p");
+    cap.className = "hint";
+    cap.textContent = "在另一台裝置上打開作息鐘，按「掃描 QR」對著這個圖（"
+                    + bytes.length + " bytes・" + qr.getModuleCount() + " 模組）。"
+                    + "系統相機掃它沒有用 —— 它不是網址，要傳給別人請用「複製分享連結」。";
+    box.append(wrap, cap);
+    box.dataset.shown = "1";
+    $("qrBtn").textContent = "收起 QR Code";
+  } catch (e) {
+    box.replaceChildren(Object.assign(document.createElement("p"),
+      { className: "hint", textContent: "QR 產生器載不下來（需要連網）。改用「複製分享連結」把網址傳過去。" }));
+  }
+});
+
+$("downloadBtn").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "schedule.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   10. 起跑
+   ═══════════════════════════════════════════════════════════════ */
+
+function refreshAll() {
+  renderDonate();
+  renderProfPick();
+  fillBellSelects();
+  renderProfFields();
+  renderDayTabs();
+  renderDayTable();
+  applyAppearance();
+  tick();
+}
+
+// 網址參數：?kiosk=1 直接進看板模式（給牆上的裝置用）
+const qs = new URLSearchParams(location.search);
+if (qs.get("kiosk") === "1") cfg.appearance.kiosk = true;
+if (["auto", "paper", "chalk"].includes(qs.get("skin"))) cfg.appearance.theme = qs.get("skin");
+if (qs.get("bpmf") === "1") cfg.appearance.bopomofo = true;
+
+// 重新載入用的快取破壞參數用完就清掉，不讓它跟著進分享連結
+if (qs.has("r")) {
+  const u = new URL(location.href);
+  u.searchParams.delete("r");
+  history.replaceState(null, "", u.pathname + u.search + u.hash);
+}
+
+// 臨時倒數：先把按鈕建好、把上次沒跑完的倒數接回來（存的是結束時刻）
+buildQuickPresets();
+quickTimer = loadTimer();
+renderQuick();
+
+refreshAll();
+
+// 壓縮的分享連結在這裡才套用（解壓是非同步的）
+if (pendingShare) {
+  (async () => {
+    try {
+      const raw = JSON.parse(await inflateFromB64(pendingShare));
+      const err = versionError(raw);
+      if (err) { toast(err); return; }
+      cfg = cleanConfig(raw);
+      editDayKey = "mon";
+      saveConfig(); refreshAll();
+      toast("已套用連結裡的設定");
+    } catch (e) { toast("這個分享連結壞了，沒有套用"); }
+  })();
+}
+updateWakeLock();
+setInterval(tick, 500);
+
+// 看板裝置通常允許自動播放；成功就直接待命，失敗才等人按
+if (qs.get("kiosk") === "1") {
+  Audio_.arm().then(ok => {
+    if (!ok) return;
+    Audio_.setVolume(prof().bells.volume);
+    syncToggles();
+  });
+}
+
+/* 「開啟鈴聲」那顆大按鈕拿掉之後，「為什麼一定要先按一下」就沒地方講了。
+   第一次載入時若還沒開，提示一次 —— 只講一次，而且只在真的沒開的時候。
+   等一下再講，是為了不要和頁面剛畫好的那一瞬間擠在一起。 */
+setTimeout(() => {
+  if (!Audio_.armed) toast("鈴聲還沒開 —— 按右上角的 ♫（瀏覽器規定要先按一下才准出聲）");
+}, 1500);
+</script>
+</body>
+</html>
